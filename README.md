@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GitDoc AI
 
-## Getting Started
+GitDoc AI is an intelligent documentation generation studio that turns any public GitHub repository into a polished, professional README.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Live Repository Analysis**: Detects package managers, frameworks, technologies, and scripts directly from public GitHub repositories.
+- **AI Documentation Engine**: Converts raw project signals into beautiful, strictly factual README files using OpenAI.
+- **Documentation Studio**: (Coming in Phase 6) A full Markdown editor to refine and publish generated documentation.
+
+## Phase 5 Features
+
+- **AI Provider Abstraction**: Supports swapping LLMs easily. Includes `OpenRouterProvider` and `MockProvider`.
+- **Markdown Validation**: Cleans up malformed code blocks and checks heading structure.
+- **Section Parsing**: Slices generated Markdown into discrete, editable sections.
+- **Quality Pre-check**: Scores the generated document based on critical developer documentation signals (e.g. Installation, Usage, License).
+
+## Configuration
+
+Duplicate `.env.example` to `.env` and fill in the values:
+
+```env
+# GitHub Configuration
+# Generate a classic token at https://github.com/settings/tokens to increase rate limits to 5000/hr.
+GITHUB_TOKEN=ghp_your_token_here
+
+# AI Provider Configuration
+# Required for documentation generation. Use 'mock' for local development without an API key.
+AI_PROVIDER=openrouter
+OPENROUTER_API_KEY=sk-or-v1-your_key_here
+OPENROUTER_MODEL=google/gemini-2.5-flash
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Multi-Provider Fallback Architecture
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+GitDoc AI features a highly reliable, server-side multi-provider AI architecture to ensure continuous documentation generation even when utilizing free-tier AI APIs which are subject to rate limits and quotas.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+We currently support the following AI Providers (all configured via `.env.example`):
+1. **Google Gemini** (Native API)
+2. **OpenRouter** (OpenAI-compatible)
+3. **Groq** (OpenAI-compatible)
+4. **Cerebras** (OpenAI-compatible)
+5. **Hugging Face** (OpenAI-compatible Inference API)
 
-## Learn More
+**How Fallback Works:**
+1. **Model-Level Fallback**: If a primary model fails with a retryable error (e.g., HTTP 429 Rate Limit, HTTP 500), GitDoc AI automatically retries using the next configured model *for the same provider*.
+2. **Provider-Level Fallback**: If all configured models for a provider fail, the orchestrator seamlessly falls back to the next configured *provider* in the `AI_PROVIDER_ORDER`.
+3. **Configuration**: The exact order of fallback is controlled by `AI_PROVIDER_ORDER` in your environment.
+4. **Resiliency**: Hard failures (like HTTP 401 Invalid API Key) instantly skip the offending provider without wasting attempt cycles. Timeouts (`AI_REQUEST_TIMEOUT_MS`) and max retry limits (`AI_MAX_TOTAL_ATTEMPTS`) ensure bounding.
 
-To learn more about Next.js, take a look at the following resources:
+> **Note on Free Tiers**: Provider availability and free model availability may change. Free API tiers have rate limits and quotas. It is recommended to configure at least two providers (e.g. `gemini,groq`) to guarantee high availability.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+#### Security
+- **Server-Side Only**: All API calls are executed strictly on the server. API keys are never exposed to the browser.
+- **Prompt Isolation**: Repository content is forcefully treated as untrusted reference data, mitigating malicious instructions injected within repository code.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+### Local Mock Mode
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+If you set `AI_PROVIDER=mock`, the application will automatically fall back to the `MockProvider`. This is useful for rapid frontend development and deterministic testing without incurring API costs. If `AI_PROVIDER=openrouter` but the key is missing, the application will correctly throw an error.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Security Considerations
+
+- **Server-side only**: All AI requests and GitHub requests happen securely on the Next.js server. `OPENAI_API_KEY` and `GITHUB_TOKEN` are never exposed to the browser.
+- **Strict Prompting**: The AI is strictly instructed NOT to hallucinate APIs, features, or commands. It relies purely on the analysis evidence provided by the repository.
+- **Safe Rendering**: All Markdown is treated as untrusted and is validated before being stored.
+
+## Known Limitations (Phase 5)
+
+- Private repositories are not currently supported.
+- The `studio` route is currently a placeholder; full editing capabilities will be introduced in Phase 6.
+- In-memory storage is used for temporary documents. Restarting the dev server will clear generated READMEs.
+
+## Development
+
+```bash
+npm install
+npm run dev
+```
