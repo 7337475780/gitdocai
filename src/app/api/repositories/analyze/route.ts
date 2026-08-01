@@ -3,8 +3,7 @@ import { z } from 'zod';
 import { parseRepositoryUrl } from '@/lib/github/parse-repository-url';
 import { RepositoryAnalyzer } from '@/lib/analysis/repository-analyzer';
 import { GitHubError } from '@/lib/github/github-client';
-import { repositoryAnalysisStore } from '@/lib/repository-analysis/analysis-store';
-import { v4 as uuidv4 } from 'uuid';
+import { repositoryAnalysisService } from '@/lib/repository-analysis/repository-analysis.service';
 
 const AnalyzeRequestSchema = z.object({
   repositoryUrl: z.string().url("Must be a valid URL"),
@@ -41,27 +40,33 @@ export async function POST(req: Request) {
     const { owner, repo } = parsed;
     
     const rawAnalysisResult = await RepositoryAnalyzer.analyze(owner, repo);
-    const analysisId = uuidv4();
     
-    const analysisResult = {
-      ...rawAnalysisResult,
-      analysisId
-    };
-
-    repositoryAnalysisStore.save({
-      analysisId,
-      analysis: analysisResult,
-      createdAt: new Date(),
-    });
-
-    const saved = repositoryAnalysisStore.get(analysisId);
-    if (!saved) {
-      throw new Error("Repository analysis could not be stored.");
+    let analysisId: string;
+    try {
+      analysisId = await repositoryAnalysisService.createAnalysis({
+        repositoryUrl,
+        repositoryOwner: owner,
+        repositoryName: repo,
+        repositoryFullName: `${owner}/${repo}`,
+        analysisData: rawAnalysisResult,
+      });
+    } catch (e) {
+      console.error('Database persistence error:', e);
+      return NextResponse.json({
+        success: false,
+        error: {
+          code: 'REPOSITORY_ANALYSIS_PERSISTENCE_FAILED',
+          message: 'The repository was analyzed, but the result could not be saved. Please try again.',
+        }
+      }, { status: 500 });
     }
 
     return NextResponse.json({
       success: true,
-      data: analysisResult,
+      data: {
+        ...rawAnalysisResult,
+        analysisId,
+      },
     });
 
   } catch (error: any) {

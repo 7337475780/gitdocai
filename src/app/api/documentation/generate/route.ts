@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { documentStore } from '@/lib/storage/memory-store';
-import { repositoryAnalysisStore } from '@/lib/repository-analysis/analysis-store';
+import { documentationService } from '@/lib/documentation/documentation.service';
+import { repositoryAnalysisService } from '@/lib/repository-analysis/repository-analysis.service';
 import { AIOrchestrator } from '@/lib/ai/ai-orchestrator';
 import { ContextBuilder } from '@/lib/documentation/context-builder';
 import { MarkdownValidator } from '@/lib/documentation/markdown-validator';
@@ -24,9 +24,9 @@ export async function POST(req: Request) {
     }
 
     const { analysisId, template, tone } = result.data;
-    const record = repositoryAnalysisStore.get(analysisId);
+    const analysisRecord = await repositoryAnalysisService.getAnalysisById(analysisId);
 
-    if (!record) {
+    if (!analysisRecord) {
       return NextResponse.json({ 
         success: false, 
         error: { 
@@ -36,7 +36,10 @@ export async function POST(req: Request) {
       }, { status: 404 });
     }
     
-    const analysis = record.analysis;
+    // Parse analysisData safely assuming it's valid JSON
+    const analysis = typeof analysisRecord.analysisData === 'string' 
+      ? JSON.parse(analysisRecord.analysisData) 
+      : analysisRecord.analysisData;
 
     const context = ContextBuilder.build(analysis);
     const orchestrator = new AIOrchestrator();
@@ -56,25 +59,37 @@ export async function POST(req: Request) {
     const sections = SectionParser.parse(cleanedMarkdown);
     const quality = QualityAnalyzer.analyze(sections);
 
-    const title = sections.find(s => s.level === 1)?.title || analysis.repositoryName;
+    const title = sections.find(s => s.level === 1)?.title || analysisRecord.repositoryName;
 
-    const documentId = crypto.randomUUID();
-    const doc = {
-      id: documentId,
-      title,
-      markdown: cleanedMarkdown,
-      template,
-      tone,
-      sections,
-      quality,
-      metadata: {
-        wordCount: cleanedMarkdown.split(/\s+/).filter(Boolean).length,
-        characterCount: cleanedMarkdown.length,
-        ...orchestrationResult.metadata
-      }
+    const metadata = {
+      wordCount: cleanedMarkdown.split(/\s+/).filter(Boolean).length,
+      characterCount: cleanedMarkdown.length,
+      ...orchestrationResult.metadata
     };
-    
-    documentStore.saveDocument(doc);
+
+    let documentId: string;
+    try {
+      documentId = await documentationService.createDocument({
+        repositoryAnalysisId: analysisId,
+        markdown: cleanedMarkdown,
+        sections: sections,
+        metadata: metadata,
+        qualityScore: quality.score,
+        generatedProvider: orchestrationResult.metadata.provider,
+        generatedModel: orchestrationResult.metadata.model,
+        generationTimeMs: orchestrationResult.metadata.generationTimeMs,
+        attemptCount: orchestrationResult.metadata.attemptCount,
+      });
+    } catch (e) {
+      console.error('Database persistence error:', e);
+      return NextResponse.json({
+        success: false,
+        error: {
+          code: 'DOCUMENT_PERSISTENCE_FAILED',
+          message: 'Documentation was generated but could not be saved. Please try again.',
+        }
+      }, { status: 500 });
+    }
 
     return NextResponse.json({
       success: true,
@@ -83,11 +98,7 @@ export async function POST(req: Request) {
         markdown: cleanedMarkdown,
         sections,
         quality,
-        metadata: {
-          wordCount: doc.metadata.wordCount,
-          characterCount: doc.metadata.characterCount,
-          ...orchestrationResult.metadata
-        }
+        metadata
       }
     });
 

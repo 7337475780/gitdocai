@@ -1,8 +1,58 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { documentStore } from '@/lib/storage/memory-store';
+import { documentationService } from '@/lib/documentation/documentation.service';
 import { MarkdownValidator } from '@/lib/documentation/markdown-validator';
 import { SectionParser } from '@/lib/documentation/section-parser';
 import { QualityAnalyzer } from '@/lib/documentation/quality-analyzer';
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ documentId: string }> }
+) {
+  try {
+    const { documentId } = await params;
+    const doc = await documentationService.getDocumentById(documentId);
+
+    if (!doc) {
+      return NextResponse.json({ 
+        success: false,
+        error: {
+          code: 'DOCUMENT_NOT_FOUND',
+          message: 'This documentation is no longer available.',
+        }
+      }, { status: 404 });
+    }
+
+    // Parse json fields
+    const metadata = typeof doc.metadata === 'string' ? JSON.parse(doc.metadata) : doc.metadata;
+    const sections = typeof doc.sections === 'string' ? JSON.parse(doc.sections) : doc.sections;
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        documentId: doc.id,
+        analysisId: doc.repositoryAnalysisId,
+        markdown: doc.markdown,
+        sections: sections,
+        metadata: metadata,
+        qualityScore: doc.qualityScore,
+        generation: {
+          provider: doc.generatedProvider,
+          model: doc.generatedModel,
+          generationTimeMs: doc.generationTimeMs,
+          attemptCount: doc.attemptCount
+        },
+        createdAt: doc.createdAt,
+        updatedAt: doc.updatedAt,
+      }
+    });
+  } catch (error) {
+    console.error('GET /api/documentation/[documentId] error:', error);
+    return NextResponse.json(
+      { error: 'An unexpected error occurred.' },
+      { status: 500 }
+    );
+  }
+}
 
 export async function PATCH(
   request: NextRequest,
@@ -19,7 +69,7 @@ export async function PATCH(
       );
     }
 
-    const doc = documentStore.getDocument(documentId);
+    const doc = await documentationService.getDocumentById(documentId);
     if (!doc) {
       return NextResponse.json({ error: 'Document not found' }, { status: 404 });
     }
@@ -36,7 +86,6 @@ export async function PATCH(
     try {
       cleanedMarkdown = MarkdownValidator.validate(rawMarkdown);
     } catch (err: any) {
-      // Return a 400 so the UI can show a validation warning without destroying content
       return NextResponse.json(
         { error: err.message || 'Validation failed.' },
         { status: 400 }
@@ -45,16 +94,21 @@ export async function PATCH(
 
     const sections = SectionParser.parse(cleanedMarkdown);
     const quality = QualityAnalyzer.analyze(sections);
+    
+    // Merge new metadata while keeping existing intact
+    const existingMetadata = typeof doc.metadata === 'string' ? JSON.parse(doc.metadata) : (doc.metadata || {});
+    
+    const newMetadata = {
+      ...existingMetadata,
+      wordCount: cleanedMarkdown.split(/\s+/).filter(Boolean).length,
+      characterCount: cleanedMarkdown.length,
+    };
 
-    const updatedDoc = documentStore.updateDocument(documentId, {
+    const updatedDoc = await documentationService.updateDocument(documentId, {
       markdown: cleanedMarkdown,
-      sections,
-      quality,
-      metadata: {
-        wordCount: cleanedMarkdown.split(/\s+/).filter(Boolean).length,
-        characterCount: cleanedMarkdown.length,
-        generationTimeMs: doc.metadata.generationTimeMs,
-      }
+      sections: sections,
+      qualityScore: quality.score,
+      metadata: newMetadata,
     });
 
     if (!updatedDoc) {
@@ -66,12 +120,9 @@ export async function PATCH(
       data: {
         documentId: updatedDoc.id,
         markdown: updatedDoc.markdown,
-        sections: updatedDoc.sections,
-        metadata: {
-          wordCount: updatedDoc.metadata.wordCount,
-          characterCount: updatedDoc.metadata.characterCount,
-          qualityScore: updatedDoc.quality.score
-        }
+        sections,
+        metadata: newMetadata,
+        qualityScore: updatedDoc.qualityScore
       }
     });
 

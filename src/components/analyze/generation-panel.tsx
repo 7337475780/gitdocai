@@ -93,7 +93,8 @@ export function GenerationPanel({ onCancel }: { onCancel: () => void }) {
       
       // Delay slightly for UX so they see the success message
       setTimeout(() => {
-        router.push(`/studio?docId=${data.data.id}`);
+        sessionStorage.setItem('currentDocumentId', data.data.id);
+        router.push(`/studio/${data.data.id}`);
       }, 1500);
 
     } catch (err: any) {

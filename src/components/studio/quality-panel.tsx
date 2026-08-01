@@ -40,7 +40,7 @@ export function QualityPanel({ quality }: QualityPanelProps) {
           </div>
 
           <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
-            {quality.suggestions.map((suggestion, i) => {
+            {(quality.suggestions || []).map((suggestion, i) => {
               let Icon = AlertTriangle;
               let iconColor = 'text-brand-amber';
 
@@ -56,7 +56,7 @@ export function QualityPanel({ quality }: QualityPanelProps) {
               );
             })}
             
-            {quality.suggestions.length === 0 && (
+            {(quality.suggestions || []).length === 0 && (
               <div className="flex gap-3 text-sm">
                 <div className={`mt-0.5 flex-shrink-0 text-brand-teal`}>
                   <Check className="h-4 w-4" />

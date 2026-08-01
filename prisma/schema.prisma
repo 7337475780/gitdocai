@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model RepositoryAnalysis {
+  id                 String   @id @default(cuid())
+  repositoryUrl      String
+  repositoryOwner    String
+  repositoryName     String
+  repositoryFullName String
+
+  defaultBranch      String?
+
+  analysisData       Json
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  documents          Documentation[]
+
+  @@index([repositoryOwner, repositoryName])
+  @@index([createdAt])
+}
+
+model Documentation {
+  id                   String   @id @default(cuid())
+
+  repositoryAnalysisId String
+  repositoryAnalysis   RepositoryAnalysis @relation(fields: [repositoryAnalysisId], references: [id], onDelete: Cascade)
+
+  markdown             String
+  sections             Json
+  metadata             Json
+
+  qualityScore         Int?
+
+  generatedProvider    String?
+  generatedModel       String?
+
+  generationTimeMs     Int?
+  attemptCount         Int?
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([repositoryAnalysisId])
+  @@index([updatedAt])
+}
