@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Download, Copy, RefreshCw, CheckCircle2, Loader2, CircleAlert, GitCommitHorizontal, ExternalLink } from 'lucide-react';
+import { useDialog } from '@/components/ui/dialog-provider';
+import { Download, Copy, RefreshCw, CheckCircle2, Loader2, CircleAlert, GitCommitHorizontal, ExternalLink, History } from 'lucide-react';
 import { GradientButton } from '@/components/ui/button';
 import { DocumentSection } from '@/lib/documentation/section-parser';
-import { QualityResult } from '@/lib/documentation/quality-analyzer';
+import { DocumentationQualityResult } from '@/lib/documentation-quality/quality-types';
 import { QualityPanel } from './quality-panel';
 import { GitHubCommitModal } from './github-commit-modal';
 import * as Popover from '@radix-ui/react-popover';
 import { GithubIcon } from '@/components/ui/icons';
+import * as Dialog from '@radix-ui/react-dialog';
+import { X, AlertTriangle } from 'lucide-react';
 
 export type SaveStatus = 'saved' | 'editing' | 'saving' | 'error';
 
@@ -14,11 +17,13 @@ interface StudioToolbarProps {
   documentId: string;
   repositoryName: string;
   saveStatus: SaveStatus;
-  quality: QualityResult | null;
+  quality: DocumentationQualityResult | null;
   onRegenerate: () => void;
   onCopy: () => void;
   onDownload: () => void;
   onForceSave: () => Promise<boolean>;
+  onMarkdownUpdate?: (markdown: string, quality: any) => void;
+  onToggleHistory: () => void;
   isRegenerating: boolean;
 }
 
@@ -31,12 +36,17 @@ export function StudioToolbar({
   onCopy,
   onDownload,
   onForceSave,
+  onMarkdownUpdate,
+  onToggleHistory,
   isRegenerating
 }: StudioToolbarProps) {
+  const dialog = useDialog();
   const [githubConnected, setGithubConnected] = useState(false);
   const [checkingGithub, setCheckingGithub] = useState(true);
   const [commitModalOpen, setCommitModalOpen] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
+  const [qualityPanelOpen, setQualityPanelOpen] = useState(false);
+  const [showLowQualityWarning, setShowLowQualityWarning] = useState(false);
 
   useEffect(() => {
     checkGithubStatus();
@@ -75,11 +85,21 @@ export function StudioToolbar({
     if (saveStatus === 'editing' || saveStatus === 'saving' || saveStatus === 'error') {
       const saved = await onForceSave();
       if (!saved) {
-        alert('Your latest changes could not be saved. Fix the save issue before committing.');
+        await dialog.alert({
+          title: "Save Issue",
+          description: "Your latest changes could not be saved. Fix the save issue before committing.",
+          variant: "destructive"
+        });
         return;
       }
     }
-    setCommitModalOpen(true);
+    
+    // Recalculate quality checks: warning if score is below 60
+    if (quality && quality.overallScore < 60) {
+      setShowLowQualityWarning(true);
+    } else {
+      setCommitModalOpen(true);
+    }
   };
 
   return (
@@ -88,7 +108,7 @@ export function StudioToolbar({
       {/* Left */}
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-white">GitDoc AI</span>
+          <span className="font-semibold text-foreground">GitDoc AI</span>
           <span className="text-muted-foreground">/</span>
           <span className="text-sm font-medium text-foreground">{repositoryName}</span>
         </div>
@@ -111,7 +131,15 @@ export function StudioToolbar({
 
       {/* Center (Quality) */}
       <div className="hidden md:flex items-center justify-center flex-1">
-        {quality && <QualityPanel quality={quality} />}
+        {quality && (
+          <QualityPanel 
+            quality={quality} 
+            documentId={documentId}
+            onMarkdownUpdate={onMarkdownUpdate}
+            open={qualityPanelOpen}
+            onOpenChange={setQualityPanelOpen}
+          />
+        )}
       </div>
 
       {/* Right */}
@@ -130,7 +158,7 @@ export function StudioToolbar({
           <>
             <button
               onClick={handleOpenCommitModal}
-              className="hidden lg:flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-black bg-white hover:bg-white/90 rounded-md transition-colors"
+              className="hidden lg:flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-background bg-foreground hover:bg-foreground/90 rounded-md transition-colors"
             >
               <GithubIcon className="h-4 w-4" />
               Commit to GitHub
@@ -138,19 +166,19 @@ export function StudioToolbar({
             
             <Popover.Root>
               <Popover.Trigger asChild>
-                <button className="hidden lg:flex items-center justify-center h-8 w-8 rounded-md bg-white/5 hover:bg-white/10 text-muted-foreground transition-colors" title="GitHub Connected">
+                <button className="hidden lg:flex items-center justify-center h-8 w-8 rounded-md bg-secondary hover:bg-secondary/85 text-muted-foreground transition-colors" title="GitHub Connected">
                   <CheckCircle2 className="h-4 w-4 text-[#2da44e]" />
                 </button>
               </Popover.Trigger>
               <Popover.Portal>
                 <Popover.Content className="z-50 w-56 rounded-xl border border-border bg-card p-4 text-card-foreground shadow-xl animate-in fade-in-0 zoom-in-95" sideOffset={8} align="end">
-                  <h4 className="font-semibold text-white mb-1 flex items-center gap-2">
+                  <h4 className="font-semibold text-foreground mb-1 flex items-center gap-2">
                     <GithubIcon className="h-4 w-4" /> GitHub connected
                   </h4>
                   <p className="text-xs text-muted-foreground mb-4">You can commit documentation directly to your repositories.</p>
                   
                   <div className="flex flex-col gap-2">
-                    <button onClick={handleConnectGithub} className="text-sm text-left px-2 py-1.5 rounded bg-white/5 hover:bg-white/10 text-white transition-colors">
+                    <button onClick={handleConnectGithub} className="text-sm text-left px-2 py-1.5 rounded bg-secondary hover:bg-secondary/80 text-foreground transition-colors">
                       Reconnect
                     </button>
                     <button onClick={handleDisconnectGithub} disabled={disconnecting} className="text-sm text-left px-2 py-1.5 rounded bg-brand-amber/10 hover:bg-brand-amber/20 text-brand-amber transition-colors">
@@ -166,15 +194,24 @@ export function StudioToolbar({
         <button 
           onClick={onRegenerate} 
           disabled={isRegenerating}
-          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-white/5 hover:bg-white/10 rounded-md transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-foreground bg-secondary hover:bg-secondary/80 rounded-md transition-colors disabled:opacity-50"
         >
           {isRegenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
           <span className="hidden sm:inline">{isRegenerating ? 'Regenerating...' : 'Regenerate'}</span>
         </button>
 
         <button 
+          onClick={onToggleHistory} 
+          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition-colors"
+          title="Version History"
+        >
+          <History className="h-4 w-4" />
+          <span className="hidden sm:inline">History</span>
+        </button>
+
+        <button 
           onClick={onCopy} 
-          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-white hover:bg-white/5 rounded-md transition-colors"
+          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition-colors"
           title="Copy Markdown"
         >
           <Copy className="h-4 w-4" />
@@ -192,6 +229,49 @@ export function StudioToolbar({
         onOpenChange={setCommitModalOpen} 
         documentId={documentId} 
       />
+
+      {/* Low Quality Commit Warning Modal */}
+      <Dialog.Root open={showLowQualityWarning} onOpenChange={setShowLowQualityWarning}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+          <Dialog.Content className="fixed left-[50%] top-[50%] z-50 w-full max-w-md translate-x-[-50%] translate-y-[-50%] border border-border bg-card p-6 shadow-2xl rounded-2xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-full bg-brand-amber/15 text-brand-amber flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div className="flex-1">
+                <Dialog.Title className="text-lg font-semibold tracking-tight text-foreground mb-2">
+                  Low Quality Score
+                </Dialog.Title>
+                <Dialog.Description className="text-sm text-muted-foreground mb-6 leading-relaxed">
+                  This README may be missing important documentation details. The current documentation quality score is <span className="text-brand-amber font-semibold">{quality?.overallScore}/100</span>.
+                </Dialog.Description>
+              </div>
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setShowLowQualityWarning(false);
+                  setQualityPanelOpen(true);
+                }}
+                className="px-4 py-2 border border-border bg-transparent hover:bg-secondary text-foreground font-medium rounded-lg transition-colors text-sm"
+              >
+                Review Suggestions
+              </button>
+              <button
+                onClick={() => {
+                  setShowLowQualityWarning(false);
+                  setCommitModalOpen(true);
+                }}
+                className="px-4 py-2 bg-foreground text-background hover:bg-foreground/90 font-medium rounded-lg transition-colors text-sm"
+              >
+                Commit Anyway
+              </button>
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
     </div>
   );
 }

@@ -23,7 +23,7 @@ export function SectionNav({
   return (
     <div className="flex h-full flex-col bg-background/50 border-r border-border">
       <div className="p-4 border-b border-border/50">
-        <h3 className="font-semibold text-white flex items-center gap-2">
+        <h3 className="font-semibold text-foreground flex items-center gap-2">
           <FileText className="h-4 w-4 text-brand-cyan" />
           Document Outline
         </h3>
@@ -36,8 +36,8 @@ export function SectionNav({
               key={section.id}
               className={`group flex items-center justify-between rounded-md px-2 py-1.5 cursor-pointer text-sm transition-colors ${
                 activeSectionId === section.id
-                  ? 'bg-white/10 text-white font-medium'
-                  : 'text-muted-foreground hover:bg-white/5 hover:text-foreground'
+                  ? 'bg-secondary text-foreground font-semibold'
+                  : 'text-muted-foreground hover:bg-secondary/40 hover:text-foreground'
               }`}
               onClick={() => onSectionClick(section.id)}
             >
@@ -55,7 +55,7 @@ export function SectionNav({
                   e.stopPropagation();
                   onRegenerateSection(section.id);
                 }}
-                className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-white/10 rounded ${activeSectionId === section.id ? 'opacity-100 text-brand-cyan' : 'text-muted-foreground'}`}
+                className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-secondary rounded ${activeSectionId === section.id ? 'opacity-100 text-brand-cyan' : 'text-muted-foreground'}`}
                 title="Regenerate this section"
               >
                 <RefreshCw className="h-3 w-3" />

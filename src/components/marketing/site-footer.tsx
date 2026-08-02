@@ -26,6 +26,11 @@ const FOOTER_LINKS = {
 
 export function SiteFooter() {
   const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <footer className="border-t border-border bg-background pt-16 pb-8">
@@ -94,7 +99,7 @@ export function SiteFooter() {
           
           <div className="flex items-center gap-4">
             <IconButton
-              icon={theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              icon={mounted && theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               aria-label="Toggle theme"
             />

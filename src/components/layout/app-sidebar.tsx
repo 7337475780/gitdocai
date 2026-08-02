@@ -46,7 +46,7 @@ export function AppSidebar({ className }: { className?: string }) {
             alt="GitDoc AI Logo"
             className="w-8 h-8 "
           />
-          <span className="text-lg font-bold tracking-tight text-white">
+          <span className="text-lg font-bold tracking-tight text-foreground">
             GitDoc AI
           </span>
         </div>
@@ -95,7 +95,7 @@ export function AppSidebar({ className }: { className?: string }) {
       <div className="px-4 py-4">
         <div className="relative overflow-hidden rounded-xl border border-brand-blue/20 bg-brand-blue/5 p-4 shadow-[0_0_30px_-10px_rgba(59,130,246,0.15)]">
           <div className="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-brand-blue/10 blur-xl" />
-          <h4 className="mb-1 flex items-center gap-1.5 text-sm font-semibold text-white">
+          <h4 className="mb-1 flex items-center gap-1.5 text-sm font-semibold text-foreground">
             <Zap className="h-3.5 w-3.5 text-brand-blue" /> Upgrade to Pro
           </h4>
           <p className="mb-3 text-xs text-muted-foreground">

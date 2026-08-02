@@ -37,6 +37,8 @@ model Documentation {
   metadata             Json
 
   qualityScore         Int?
+  qualityData          Json?
+  qualityEvaluatedAt   DateTime?
 
   generatedProvider    String?
   generatedModel       String?
@@ -47,6 +49,54 @@ model Documentation {
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
+  improvementProposals DocumentationImprovementProposal[]
+  versions             DocumentationVersion[]
+
   @@index([repositoryAnalysisId])
   @@index([updatedAt])
 }
+
+model DocumentationImprovementProposal {
+  id                 String        @id @default(cuid())
+  documentId         String
+  documentation      Documentation @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  issueId            String
+  targetSection      String?
+  currentContentHash String
+  proposedContent    String
+  explanation        String?
+  createdAt          DateTime      @default(now())
+  expiresAt          DateTime
+  appliedAt          DateTime?
+
+  @@index([documentId])
+}
+
+model DocumentationVersion {
+  id            String                     @id @default(cuid())
+  documentId    String
+  document      Documentation              @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  versionNumber Int
+  markdown      String
+  contentHash   String
+  sections      Json?
+  metadata      Json?
+  qualityScore  Int?
+  qualityData   Json?
+  sourceType    DocumentationVersionSource
+  sourceLabel   String?
+  createdAt     DateTime                   @default(now())
+
+  @@unique([documentId, versionNumber])
+  @@index([documentId, createdAt])
+}
+
+enum DocumentationVersionSource {
+  INITIAL_GENERATION
+  MANUAL_EDIT
+  SECTION_REGENERATION
+  FULL_REGENERATION
+  QUALITY_IMPROVEMENT
+  RESTORE
+}
+

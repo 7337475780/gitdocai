@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef, use } from 'react';
 import { useRouter } from 'next/navigation';
+import { useDialog } from '@/components/ui/dialog-provider';
 import { PageContainer } from '@/components/ui/layout';
 import { SectionNav } from '@/components/studio/section-nav';
 import { MarkdownEditor } from '@/components/studio/markdown-editor';
@@ -10,9 +11,13 @@ import { StudioToolbar, SaveStatus } from '@/components/studio/studio-toolbar';
 import { GradientButton } from '@/components/ui/button';
 import { FileText, Menu } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
+import { DocumentationQualityResult } from '@/lib/documentation-quality/quality-types';
+import { HistoryPanel } from '@/components/studio/history-panel';
+import { VersionCompareModal } from '@/components/studio/version-compare-modal';
 
 export default function DocumentStudioPage({ params }: { params: Promise<{ documentId: string }> }) {
   const router = useRouter();
+  const dialog = useDialog();
   const { documentId } = use(params);
   const [doc, setDoc] = useState<any | null>(null);
   const [markdown, setMarkdown] = useState('');
@@ -21,21 +26,32 @@ export default function DocumentStudioPage({ params }: { params: Promise<{ docum
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [mobileTab, setMobileTab] = useState<'editor' | 'preview'>('editor');
+  const [quality, setQuality] = useState<DocumentationQualityResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [compareModalOpen, setCompareModalOpen] = useState(false);
+  const [compareBaseVersion, setCompareBaseVersion] = useState<any | null>(null);
 
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     setIsLoading(true);
-    fetch(`/api/documentation/${documentId}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          setDoc(data.data);
-          setMarkdown(data.data.markdown);
+    Promise.all([
+      fetch(`/api/documentation/${documentId}`).then(res => res.json()),
+      fetch(`/api/documentation/${documentId}/quality`).then(res => res.json())
+    ])
+      .then(([docData, qualData]) => {
+        if (docData.success) {
+          setDoc(docData.data);
+          setMarkdown(docData.data.markdown);
         } else {
-          setError(data.error?.message || 'Failed to load document');
+          setError(docData.error?.message || 'Failed to load document');
+        }
+
+        if (qualData.success) {
+          setQuality(qualData.data);
         }
       })
       .catch(err => {
@@ -64,6 +80,9 @@ export default function DocumentStudioPage({ params }: { params: Promise<{ docum
         const data = await res.json();
         if (data.success) {
           setDoc(data.data); 
+          if (data.data.qualityData) {
+            setQuality(data.data.qualityData);
+          }
           setSaveStatus('saved');
         } else {
           setSaveStatus('error');
@@ -71,7 +90,7 @@ export default function DocumentStudioPage({ params }: { params: Promise<{ docum
       } catch (e) {
         setSaveStatus('error');
       }
-    }, 1000);
+    }, 2000); // 2 seconds debounce for quality updates
   }, [documentId]);
 
   const handleCopy = () => {
@@ -89,7 +108,14 @@ export default function DocumentStudioPage({ params }: { params: Promise<{ docum
   };
 
   const handleRegenerateFull = async () => {
-    if (!confirm('Regenerate documentation? This will replace the current README with a newly generated version. Your current edits will be lost.')) return;
+    const confirmed = await dialog.confirm({
+      title: "Regenerate Documentation?",
+      description: "This will replace the current README with a newly generated version. Your current edits will be lost.",
+      variant: "warning",
+      confirmText: "Regenerate",
+      cancelText: "Cancel",
+    });
+    if (!confirmed) return;
     
     setIsRegenerating(true);
     // Future integration point for full regeneration API
@@ -110,6 +136,9 @@ export default function DocumentStudioPage({ params }: { params: Promise<{ docum
       if (data.success) {
         setDoc(data.data);
         setMarkdown(data.data.markdown);
+        if (data.data.qualityData) {
+          setQuality(data.data.qualityData);
+        }
         setSaveStatus('saved');
       } else {
         setSaveStatus('error');
@@ -132,6 +161,9 @@ export default function DocumentStudioPage({ params }: { params: Promise<{ docum
       const data = await res.json();
       if (data.success) {
         setDoc(data.data);
+        if (data.data.qualityData) {
+          setQuality(data.data.qualityData);
+        }
         setSaveStatus('saved');
         return true;
       }
@@ -140,6 +172,50 @@ export default function DocumentStudioPage({ params }: { params: Promise<{ docum
     } catch (e) {
       setSaveStatus('error');
       return false;
+    }
+  };
+
+  const handleRestoreFromId = async (versionId: string, versionNumber: number) => {
+    const confirmed = await dialog.confirm({
+      title: `Restore Version ${versionNumber}?`,
+      description: "The current state will be preserved in version history.",
+      variant: "info",
+      confirmText: "Restore Version",
+      cancelText: "Cancel"
+    });
+    if (!confirmed) return;
+    try {
+      const res = await fetch(`/api/documentation/${documentId}/versions/${versionId}/restore`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          expectedUpdatedAt: doc.updatedAt
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setMarkdown(data.data.document.markdown);
+        setQuality(data.data.document.qualityData);
+        setDoc((prev: any) => prev ? { 
+          ...prev, 
+          markdown: data.data.document.markdown, 
+          updatedAt: data.data.document.updatedAt 
+        } : null);
+        setCompareModalOpen(false);
+        setHistoryOpen(false);
+      } else {
+        await dialog.alert({
+          title: "Restore Failed",
+          description: data.error?.message || "Failed to restore version.",
+          variant: "destructive"
+        });
+      }
+    } catch (e) {
+      await dialog.alert({
+        title: "Restore Failed",
+        description: "An unexpected error occurred while restoring the version.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -178,11 +254,16 @@ export default function DocumentStudioPage({ params }: { params: Promise<{ docum
         documentId={documentId}
         repositoryName={doc.title || "Repository"}
         saveStatus={saveStatus}
-        quality={doc.qualityScore}
+        quality={quality}
         onRegenerate={handleRegenerateFull}
         onCopy={handleCopy}
         onDownload={handleDownload}
         onForceSave={handleForceSave}
+        onMarkdownUpdate={(newMarkdown, newQuality) => {
+          setMarkdown(newMarkdown);
+          setQuality(newQuality);
+        }}
+        onToggleHistory={() => setHistoryOpen(true)}
         isRegenerating={isRegenerating}
       />
 
@@ -232,6 +313,41 @@ export default function DocumentStudioPage({ params }: { params: Promise<{ docum
           <MarkdownPreview markdown={markdown} />
         </div>
       </div>
+
+      <HistoryPanel
+        documentId={documentId}
+        currentUpdatedAt={doc.updatedAt}
+        open={historyOpen}
+        onOpenChange={setHistoryOpen}
+        onCompareWithCurrent={(version) => {
+          setCompareBaseVersion(version);
+          setCompareModalOpen(true);
+        }}
+        onRestoreSuccess={(newMarkdown, newQuality) => {
+          setMarkdown(newMarkdown);
+          setQuality(newQuality);
+          setDoc((prev: any) => prev ? { 
+            ...prev, 
+            markdown: newMarkdown, 
+            updatedAt: new Date().toISOString() 
+          } : null);
+        }}
+      />
+
+      {compareBaseVersion && (
+        <VersionCompareModal
+          documentId={documentId}
+          baseVersionId={compareBaseVersion.versionId}
+          baseVersionNumber={compareBaseVersion.versionNumber}
+          compareVersionId="current"
+          compareVersionNumber={(quality?.overallScore || 0) > 0 ? 0 : 0} // Standard dynamic title handles it
+          baseQualityScore={compareBaseVersion.qualityScore}
+          compareQualityScore={quality?.overallScore}
+          open={compareModalOpen}
+          onOpenChange={setCompareModalOpen}
+          onRestore={() => handleRestoreFromId(compareBaseVersion.versionId, compareBaseVersion.versionNumber)}
+        />
+      )}
     </div>
   );
 }

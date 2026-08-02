@@ -6,7 +6,8 @@ import { AIOrchestrator } from '@/lib/ai/ai-orchestrator';
 import { ContextBuilder } from '@/lib/documentation/context-builder';
 import { MarkdownValidator } from '@/lib/documentation/markdown-validator';
 import { SectionParser } from '@/lib/documentation/section-parser';
-import { QualityAnalyzer } from '@/lib/documentation/quality-analyzer';
+import { QualityEngine } from '@/lib/documentation-quality/quality-engine';
+import { VersionService } from '@/lib/documentation-versions/version-service';
 
 const GenerateRequestSchema = z.object({
   analysisId: z.string(),
@@ -57,7 +58,7 @@ export async function POST(req: Request) {
 
     // Parse sections and pre-score
     const sections = SectionParser.parse(cleanedMarkdown);
-    const quality = QualityAnalyzer.analyze(sections);
+    const quality = QualityEngine.evaluate(cleanedMarkdown, analysis);
 
     const title = sections.find(s => s.level === 1)?.title || analysisRecord.repositoryName;
 
@@ -74,11 +75,25 @@ export async function POST(req: Request) {
         markdown: cleanedMarkdown,
         sections: sections,
         metadata: metadata,
-        qualityScore: quality.score,
+        qualityScore: quality.overallScore,
+        qualityData: quality as any,
+        qualityEvaluatedAt: new Date(quality.evaluatedAt),
         generatedProvider: orchestrationResult.metadata.provider,
         generatedModel: orchestrationResult.metadata.model,
         generationTimeMs: orchestrationResult.metadata.generationTimeMs,
         attemptCount: orchestrationResult.metadata.attemptCount,
+      });
+
+      // Create initial version snapshot
+      await VersionService.createVersion({
+        documentId,
+        markdown: cleanedMarkdown,
+        sections: sections,
+        metadata: metadata,
+        qualityScore: quality.overallScore,
+        qualityData: quality,
+        sourceType: 'INITIAL_GENERATION',
+        sourceLabel: 'Initial AI generation'
       });
     } catch (e) {
       console.error('Database persistence error:', e);

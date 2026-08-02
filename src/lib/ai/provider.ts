@@ -57,4 +57,15 @@ export interface AIProvider {
     model: string,
     timeoutMs: number
   ): Promise<AIModelGenerationResult>;
+
+  generateImprovement(
+    context: DocumentationContext,
+    issueTitle: string,
+    issueDescription: string,
+    recommendation: string,
+    targetSectionTitle?: string,
+    currentSectionContent?: string,
+    model?: string,
+    timeoutMs?: number
+  ): Promise<AIModelGenerationResult>;
 }

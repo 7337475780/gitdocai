@@ -176,4 +176,26 @@ export class AIOrchestrator {
       (provider, model, timeoutMs) => provider.generateSection(sectionTitle, sectionContent, instruction, model, timeoutMs)
     );
   }
+
+  async generateImprovement(
+    context: DocumentationContext,
+    issueTitle: string,
+    issueDescription: string,
+    recommendation: string,
+    targetSectionTitle?: string,
+    currentSectionContent?: string
+  ): Promise<OrchestratedGenerationResult> {
+    return this.executeWithFallback(
+      (provider, model, timeoutMs) => provider.generateImprovement(
+        context,
+        issueTitle,
+        issueDescription,
+        recommendation,
+        targetSectionTitle,
+        currentSectionContent,
+        model,
+        timeoutMs
+      )
+    );
+  }
 }

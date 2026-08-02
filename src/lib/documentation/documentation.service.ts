@@ -13,6 +13,8 @@ export const documentationService = {
     sections: any;
     metadata: any;
     qualityScore: number;
+    qualityData?: any;
+    qualityEvaluatedAt?: Date;
     generatedProvider: string;
     generatedModel: string;
     generationTimeMs: number;
@@ -25,6 +27,8 @@ export const documentationService = {
         sections: data.sections || [],
         metadata: data.metadata || {},
         qualityScore: data.qualityScore,
+        qualityData: data.qualityData || null,
+        qualityEvaluatedAt: data.qualityEvaluatedAt || null,
         generatedProvider: data.generatedProvider,
         generatedModel: data.generatedModel,
         generationTimeMs: data.generationTimeMs,
@@ -39,6 +43,8 @@ export const documentationService = {
     sections?: any;
     metadata?: any;
     qualityScore?: number;
+    qualityData?: any;
+    qualityEvaluatedAt?: Date;
   }) {
     return await prisma.documentation.update({
       where: { id },
@@ -47,6 +53,8 @@ export const documentationService = {
         ...(data.sections !== undefined && { sections: data.sections }),
         ...(data.metadata !== undefined && { metadata: data.metadata }),
         ...(data.qualityScore !== undefined && { qualityScore: data.qualityScore }),
+        ...(data.qualityData !== undefined && { qualityData: data.qualityData }),
+        ...(data.qualityEvaluatedAt !== undefined && { qualityEvaluatedAt: data.qualityEvaluatedAt }),
       }
     });
   }

@@ -2,7 +2,43 @@ import { NextRequest, NextResponse } from 'next/server';
 import { documentationService } from '@/lib/documentation/documentation.service';
 import { MarkdownValidator } from '@/lib/documentation/markdown-validator';
 import { SectionParser } from '@/lib/documentation/section-parser';
-import { QualityAnalyzer } from '@/lib/documentation/quality-analyzer';
+import { QualityEngine } from '@/lib/documentation-quality/quality-engine';
+import { repositoryAnalysisService } from '@/lib/repository-analysis/repository-analysis.service';
+import { VersionService } from '@/lib/documentation-versions/version-service';
+
+// Global map to hold debounced snapshots per document
+const snapshotTimeouts = new Map<string, NodeJS.Timeout>();
+
+function queueDebouncedSnapshot(documentId: string) {
+  if (snapshotTimeouts.has(documentId)) {
+    clearTimeout(snapshotTimeouts.get(documentId)!);
+  }
+
+  const interval = parseInt(process.env.VERSION_SNAPSHOT_INTERVAL || '5000', 10);
+
+  const timeout = setTimeout(async () => {
+    snapshotTimeouts.delete(documentId);
+    try {
+      const doc = await documentationService.getDocumentById(documentId);
+      if (doc) {
+        await VersionService.createVersion({
+          documentId,
+          markdown: doc.markdown,
+          sections: doc.sections,
+          metadata: doc.metadata,
+          qualityScore: doc.qualityScore,
+          qualityData: doc.qualityData,
+          sourceType: 'MANUAL_EDIT',
+          sourceLabel: 'Manual edits'
+        });
+      }
+    } catch (err) {
+      console.error('Failed to create debounced version snapshot:', err);
+    }
+  }, interval);
+
+  snapshotTimeouts.set(documentId, timeout);
+}
 
 export async function GET(
   request: NextRequest,
@@ -92,8 +128,17 @@ export async function PATCH(
       );
     }
 
+    const analysisRecord = await repositoryAnalysisService.getAnalysisById(doc.repositoryAnalysisId);
+    if (!analysisRecord) {
+      return NextResponse.json({ error: 'Repository analysis not found.' }, { status: 404 });
+    }
+
+    const analysis = typeof analysisRecord.analysisData === 'string'
+      ? JSON.parse(analysisRecord.analysisData)
+      : analysisRecord.analysisData;
+
     const sections = SectionParser.parse(cleanedMarkdown);
-    const quality = QualityAnalyzer.analyze(sections);
+    const quality = QualityEngine.evaluate(cleanedMarkdown, analysis);
     
     // Merge new metadata while keeping existing intact
     const existingMetadata = typeof doc.metadata === 'string' ? JSON.parse(doc.metadata) : (doc.metadata || {});
@@ -107,13 +152,18 @@ export async function PATCH(
     const updatedDoc = await documentationService.updateDocument(documentId, {
       markdown: cleanedMarkdown,
       sections: sections,
-      qualityScore: quality.score,
+      qualityScore: quality.overallScore,
+      qualityData: quality as any,
+      qualityEvaluatedAt: new Date(quality.evaluatedAt),
       metadata: newMetadata,
     });
 
     if (!updatedDoc) {
       return NextResponse.json({ error: 'Failed to update document.' }, { status: 500 });
     }
+
+    // Schedule debounced snapshot creation
+    queueDebouncedSnapshot(documentId);
 
     return NextResponse.json({
       success: true,
@@ -122,7 +172,8 @@ export async function PATCH(
         markdown: updatedDoc.markdown,
         sections,
         metadata: newMetadata,
-        qualityScore: updatedDoc.qualityScore
+        qualityScore: updatedDoc.qualityScore,
+        qualityData: quality
       }
     });
 

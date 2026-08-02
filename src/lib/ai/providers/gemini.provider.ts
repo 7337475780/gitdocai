@@ -2,6 +2,7 @@ import { AIProvider, AIProviderId, DocumentationContext, GenerateReadmeOptions }
 import { AIModelGenerationResult } from '../schemas/ai-response';
 import { AIProviderError } from '../errors/ai-provider-error';
 import { buildSystemPrompt, buildUserPrompt } from '../prompts/generate-readme';
+import { buildImprovementSystemPrompt, buildImprovementUserPrompt } from '../prompts/improve-readme';
 import { parseModelList } from '../config/ai-config';
 
 export class GeminiProvider implements AIProvider {
@@ -135,6 +136,129 @@ export class GeminiProvider implements AIProvider {
         retryable: true,
         provider: this.id,
         model,
+        cause: error
+      });
+    }
+  }
+
+  async generateImprovement(
+    context: DocumentationContext,
+    issueTitle: string,
+    issueDescription: string,
+    recommendation: string,
+    targetSectionTitle?: string,
+    currentSectionContent?: string,
+    model?: string,
+    timeoutMs?: number
+  ): Promise<AIModelGenerationResult> {
+    const apiKey = process.env.GEMINI_API_KEY;
+    const realModel = model || 'gemini-1.5-flash';
+    const realTimeout = timeoutMs || 30000;
+
+    if (!apiKey) {
+      throw new AIProviderError({
+        code: 'AI_PROVIDER_NOT_CONFIGURED',
+        message: 'Missing API key',
+        retryable: false,
+        provider: this.id,
+        model: realModel
+      });
+    }
+
+    const systemPrompt = buildImprovementSystemPrompt(issueTitle, recommendation, targetSectionTitle);
+    const userPrompt = buildImprovementUserPrompt(context, issueDescription, targetSectionTitle, currentSectionContent);
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${realModel}:generateContent?key=${apiKey}`;
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), realTimeout);
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [
+            { role: 'user', parts: [{ text: userPrompt }] }
+          ],
+          systemInstruction: {
+            parts: [{ text: systemPrompt }]
+          },
+          generationConfig: {
+            temperature: 0.2,
+            maxOutputTokens: 2500,
+          }
+        }),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        let errorCode: any = 'AI_PROVIDER_FAILED';
+        let retryable = true;
+        
+        if (response.status === 400 && response.statusText.includes('API key')) {
+          errorCode = 'AI_PROVIDER_AUTHENTICATION_FAILED';
+          retryable = false;
+        } else if (response.status === 429) {
+          errorCode = 'AI_RATE_LIMITED';
+        }
+
+        throw new AIProviderError({
+          code: errorCode,
+          message: `Gemini error: ${response.statusText}`,
+          retryable,
+          provider: this.id,
+          model: realModel,
+          statusCode: response.status
+        });
+      }
+
+      const data = await response.json();
+      const markdown = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+
+      if (!markdown) {
+        throw new AIProviderError({
+          code: 'AI_EMPTY_RESPONSE',
+          message: 'Received empty response from Gemini',
+          retryable: true,
+          provider: this.id,
+          model: realModel
+        });
+      }
+
+      return {
+        markdown,
+        usageMetadata: data.usageMetadata ? {
+          promptTokens: data.usageMetadata.promptTokenCount,
+          completionTokens: data.usageMetadata.candidatesTokenCount,
+          totalTokens: data.usageMetadata.totalTokenCount,
+        } : undefined,
+        providerId: this.id,
+        modelId: realModel
+      };
+
+    } catch (error: any) {
+      if (error instanceof AIProviderError) throw error;
+      
+      if (error.name === 'AbortError') {
+        throw new AIProviderError({
+          code: 'AI_REQUEST_TIMEOUT',
+          message: 'Gemini request timed out',
+          retryable: true,
+          provider: this.id,
+          model: realModel
+        });
+      }
+      
+      throw new AIProviderError({
+        code: 'AI_GENERATION_FAILED',
+        message: error.message || 'Unknown Gemini error',
+        retryable: true,
+        provider: this.id,
+        model: realModel,
         cause: error
       });
     }

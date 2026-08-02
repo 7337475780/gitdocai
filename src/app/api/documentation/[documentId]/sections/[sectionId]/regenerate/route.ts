@@ -3,7 +3,9 @@ import { documentationService } from '@/lib/documentation/documentation.service'
 import { AIOrchestrator } from '@/lib/ai/ai-orchestrator';
 import { MarkdownValidator } from '@/lib/documentation/markdown-validator';
 import { SectionParser } from '@/lib/documentation/section-parser';
-import { QualityAnalyzer } from '@/lib/documentation/quality-analyzer';
+import { QualityEngine } from '@/lib/documentation-quality/quality-engine';
+import { repositoryAnalysisService } from '@/lib/repository-analysis/repository-analysis.service';
+import { VersionService } from '@/lib/documentation-versions/version-service';
 
 export async function POST(
   request: NextRequest,
@@ -56,8 +58,17 @@ export async function POST(
       // ignore
     }
 
+    const analysisRecord = await repositoryAnalysisService.getAnalysisById(doc.repositoryAnalysisId);
+    if (!analysisRecord) {
+      return NextResponse.json({ error: 'Repository analysis not found' }, { status: 404 });
+    }
+
+    const analysis = typeof analysisRecord.analysisData === 'string'
+      ? JSON.parse(analysisRecord.analysisData)
+      : analysisRecord.analysisData;
+
     const newSections = SectionParser.parse(cleanedMarkdown);
-    const newQuality = QualityAnalyzer.analyze(newSections);
+    const newQuality = QualityEngine.evaluate(cleanedMarkdown, analysis);
 
     const existingMetadata = typeof doc.metadata === 'string' ? JSON.parse(doc.metadata) : (doc.metadata || {});
     const newMetadata = {
@@ -70,12 +81,30 @@ export async function POST(
     const updatedDoc = await documentationService.updateDocument(documentId, {
       markdown: cleanedMarkdown,
       sections: newSections,
-      qualityScore: newQuality.score,
+      qualityScore: newQuality.overallScore,
+      qualityData: newQuality as any,
+      qualityEvaluatedAt: new Date(newQuality.evaluatedAt),
       metadata: newMetadata,
     });
 
     if (!updatedDoc) {
        return NextResponse.json({ error: 'Failed to update document' }, { status: 500 });
+    }
+
+    // Create version snapshot for section regeneration
+    try {
+      await VersionService.createVersion({
+        documentId,
+        markdown: cleanedMarkdown,
+        sections: newSections,
+        metadata: newMetadata,
+        qualityScore: newQuality.overallScore,
+        qualityData: newQuality,
+        sourceType: 'SECTION_REGENERATION',
+        sourceLabel: `Section regenerated: ${targetSection.title}`
+      });
+    } catch (verErr) {
+      console.error('Failed to create section regeneration version snapshot:', verErr);
     }
 
     return NextResponse.json({
@@ -85,7 +114,8 @@ export async function POST(
         markdown: updatedDoc.markdown,
         sections: newSections,
         metadata: newMetadata,
-        qualityScore: updatedDoc.qualityScore
+        qualityScore: updatedDoc.qualityScore,
+        qualityData: newQuality
       }
     });
 
