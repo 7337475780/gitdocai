@@ -11,13 +11,25 @@ import { GithubIcon } from '@/components/ui/icons';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, AlertTriangle } from 'lucide-react';
 
+import { DocumentationFreshnessStatus } from '@/lib/documentation-freshness/freshness-types';
+import { FreshnessBadge } from './freshness-badge';
+import { ExportMenu } from './export-menu';
+
 export type SaveStatus = 'saved' | 'editing' | 'saving' | 'error';
 
 interface StudioToolbarProps {
   documentId: string;
+  documentType?: string;
+  repositoryAnalysisId?: string;
   repositoryName: string;
   saveStatus: SaveStatus;
   quality: DocumentationQualityResult | null;
+  freshnessStatus?: DocumentationFreshnessStatus | null;
+  freshnessImpactScore?: number;
+  onToggleFreshness?: () => void;
+  isFreshnessLoading?: boolean;
+  onOpenSitePreview?: () => void;
+  onOpenPublishModal?: () => void;
   onRegenerate: () => void;
   onCopy: () => void;
   onDownload: () => void;
@@ -29,9 +41,17 @@ interface StudioToolbarProps {
 
 export function StudioToolbar({
   documentId,
+  documentType = 'README',
+  repositoryAnalysisId,
   repositoryName,
   saveStatus,
   quality,
+  freshnessStatus,
+  freshnessImpactScore,
+  onToggleFreshness,
+  isFreshnessLoading,
+  onOpenSitePreview,
+  onOpenPublishModal,
   onRegenerate,
   onCopy,
   onDownload,
@@ -129,8 +149,17 @@ export function StudioToolbar({
         </div>
       </div>
 
-      {/* Center (Quality) */}
-      <div className="hidden md:flex items-center justify-center flex-1">
+      {/* Center (Freshness & Quality) */}
+      <div className="hidden md:flex items-center justify-center gap-3 flex-1">
+        {onToggleFreshness && (
+          <FreshnessBadge
+            status={freshnessStatus || null}
+            impactScore={freshnessImpactScore}
+            onClick={onToggleFreshness}
+            isLoading={isFreshnessLoading}
+          />
+        )}
+
         {quality && (
           <QualityPanel 
             quality={quality} 
@@ -208,6 +237,14 @@ export function StudioToolbar({
           <History className="h-4 w-4" />
           <span className="hidden sm:inline">History</span>
         </button>
+
+        <ExportMenu
+          documentId={documentId}
+          documentType={documentType}
+          repositoryAnalysisId={repositoryAnalysisId}
+          onOpenSitePreview={onOpenSitePreview || (() => {})}
+          onOpenPublishModal={onOpenPublishModal || (() => {})}
+        />
 
         <button 
           onClick={onCopy} 

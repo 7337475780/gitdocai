@@ -6,6 +6,31 @@ datasource db {
   provider = "postgresql"
 }
 
+enum DocumentationFreshnessStatus {
+  UP_TO_DATE
+  CHANGES_DETECTED
+  REVIEW_RECOMMENDED
+  OUTDATED
+  UNKNOWN
+}
+
+enum DocumentationSiteStatus {
+  DRAFT
+  GENERATING
+  READY
+  PUBLISHING
+  PUBLISHED
+  FAILED
+}
+
+enum DocumentationPublishStatus {
+  PENDING
+  BUILDING
+  DEPLOYING
+  PUBLISHED
+  FAILED
+}
+
 model RepositoryAnalysis {
   id                 String   @id @default(cuid())
   repositoryUrl      String
@@ -21,9 +46,78 @@ model RepositoryAnalysis {
   updatedAt          DateTime @updatedAt
 
   documents          Documentation[]
+  snapshots          RepositorySnapshot[]
+  freshnessScans     DocumentationFreshnessScan[]
+  site               DocumentationSite?
 
   @@index([repositoryOwner, repositoryName])
   @@index([createdAt])
+}
+
+model RepositorySnapshot {
+  id                   String   @id @default(cuid())
+  repositoryAnalysisId String
+  repositoryAnalysis   RepositoryAnalysis @relation(fields: [repositoryAnalysisId], references: [id], onDelete: Cascade)
+
+  commitSha           String?
+  branch              String?
+  fileManifest        Json
+  analysisFingerprint String
+
+  createdAt           DateTime @default(now())
+
+  documents           Documentation[]
+  versions            DocumentationVersion[]
+  baselineScans       DocumentationFreshnessScan[] @relation("BaselineScan")
+  latestScans         DocumentationFreshnessScan[] @relation("LatestScan")
+
+  @@index([repositoryAnalysisId, createdAt])
+}
+
+model DocumentationFreshnessScan {
+  id                   String   @id @default(cuid())
+
+  repositoryAnalysisId String
+  repositoryAnalysis   RepositoryAnalysis @relation(fields: [repositoryAnalysisId], references: [id], onDelete: Cascade)
+
+  baselineSnapshotId   String?
+  baselineSnapshot     RepositorySnapshot? @relation("BaselineScan", fields: [baselineSnapshotId], references: [id], onDelete: SetNull)
+
+  latestSnapshotId     String?
+  latestSnapshot       RepositorySnapshot? @relation("LatestScan", fields: [latestSnapshotId], references: [id], onDelete: SetNull)
+
+  status               DocumentationFreshnessStatus
+  summary              Json
+
+  scannedAt            DateTime @default(now())
+  createdAt            DateTime @default(now())
+
+  impacts              DocumentationFreshnessImpact[]
+
+  @@index([repositoryAnalysisId, scannedAt])
+}
+
+model DocumentationFreshnessImpact {
+  id                    String   @id @default(cuid())
+
+  freshnessScanId       String
+  freshnessScan         DocumentationFreshnessScan @relation(fields: [freshnessScanId], references: [id], onDelete: Cascade)
+
+  documentId            String
+  document              Documentation @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  status                DocumentationFreshnessStatus
+  impactScore           Int
+  confidence            Int
+  summary               String
+  reasons               Json
+  affectedSections      Json
+  deterministicEvidence Json?
+
+  createdAt             DateTime @default(now())
+
+  @@index([freshnessScanId, documentId])
+  @@index([documentId, status])
 }
 
 model Documentation {
@@ -31,6 +125,13 @@ model Documentation {
 
   repositoryAnalysisId String
   repositoryAnalysis   RepositoryAnalysis @relation(fields: [repositoryAnalysisId], references: [id], onDelete: Cascade)
+
+  baselineSnapshotId   String?
+  baselineSnapshot     RepositorySnapshot? @relation(fields: [baselineSnapshotId], references: [id], onDelete: SetNull)
+  baselineUpdatedAt   DateTime?
+
+  freshnessReviewedAt  DateTime?
+  freshnessReviewSource String?
 
   markdown             String
   sections             Json
@@ -51,6 +152,7 @@ model Documentation {
 
   improvementProposals DocumentationImprovementProposal[]
   versions             DocumentationVersion[]
+  freshnessImpacts     DocumentationFreshnessImpact[]
 
   @@index([repositoryAnalysisId])
   @@index([updatedAt])
@@ -73,19 +175,24 @@ model DocumentationImprovementProposal {
 }
 
 model DocumentationVersion {
-  id            String                     @id @default(cuid())
-  documentId    String
-  document      Documentation              @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  versionNumber Int
-  markdown      String
-  contentHash   String
-  sections      Json?
-  metadata      Json?
-  qualityScore  Int?
-  qualityData   Json?
-  sourceType    DocumentationVersionSource
-  sourceLabel   String?
-  createdAt     DateTime                   @default(now())
+  id                  String                     @id @default(cuid())
+  documentId          String
+  document            Documentation              @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  baselineSnapshotId  String?
+  baselineSnapshot    RepositorySnapshot?        @relation(fields: [baselineSnapshotId], references: [id], onDelete: SetNull)
+  baselineUpdatedAt  DateTime?
+
+  versionNumber       Int
+  markdown            String
+  contentHash         String
+  sections            Json?
+  metadata            Json?
+  qualityScore        Int?
+  qualityData         Json?
+  sourceType          DocumentationVersionSource
+  sourceLabel         String?
+  createdAt           DateTime                   @default(now())
 
   @@unique([documentId, versionNumber])
   @@index([documentId, createdAt])
@@ -100,3 +207,49 @@ enum DocumentationVersionSource {
   RESTORE
 }
 
+model DocumentationSite {
+  id                    String   @id @default(cuid())
+
+  repositoryAnalysisId  String   @unique
+  repositoryAnalysis    RepositoryAnalysis @relation(fields: [repositoryAnalysisId], references: [id], onDelete: Cascade)
+
+  status                DocumentationSiteStatus @default(DRAFT)
+
+  siteName              String
+  slug                  String?
+
+  configuration         Json
+  manifest              Json?
+
+  generatedAt           DateTime?
+  publishedAt           DateTime?
+  lastPublishedAt       DateTime?
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  publishes             DocumentationSitePublish[]
+
+  @@index([status])
+}
+
+model DocumentationSitePublish {
+  id                    String   @id @default(cuid())
+
+  documentationSiteId   String
+  documentationSite     DocumentationSite @relation(fields: [documentationSiteId], references: [id], onDelete: Cascade)
+
+  status                DocumentationPublishStatus @default(PENDING)
+
+  deploymentUrl         String?
+  deploymentId          String?
+
+  manifest              Json
+
+  errorCode             String?
+
+  createdAt             DateTime @default(now())
+  completedAt           DateTime?
+
+  @@index([documentationSiteId, createdAt])
+}

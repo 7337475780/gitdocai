@@ -10,10 +10,15 @@ import { MarkdownPreview } from '@/components/studio/markdown-preview';
 import { StudioToolbar, SaveStatus } from '@/components/studio/studio-toolbar';
 import { GradientButton } from '@/components/ui/button';
 import { FileText, Menu } from 'lucide-react';
-import * as Dialog from '@radix-ui/react-dialog';
 import { DocumentationQualityResult } from '@/lib/documentation-quality/quality-types';
 import { HistoryPanel } from '@/components/studio/history-panel';
 import { VersionCompareModal } from '@/components/studio/version-compare-modal';
+import { FreshnessPanel } from '@/components/studio/freshness-panel';
+import { SectionRegenerationModal } from '@/components/studio/section-regeneration-modal';
+import { FullRegenerationModal } from '@/components/studio/full-regeneration-modal';
+import { MarkReviewedModal } from '@/components/studio/mark-reviewed-modal';
+import { SitePreviewModal } from '@/components/studio/site-preview-modal';
+import { PublishModal } from '@/components/studio/publish-modal';
 
 export default function DocumentStudioPage({ params }: { params: Promise<{ documentId: string }> }) {
   const router = useRouter();
@@ -34,15 +39,41 @@ export default function DocumentStudioPage({ params }: { params: Promise<{ docum
   const [compareModalOpen, setCompareModalOpen] = useState(false);
   const [compareBaseVersion, setCompareBaseVersion] = useState<any | null>(null);
 
+  // Phase 11 Freshness States
+  const [freshnessDetail, setFreshnessDetail] = useState<any | null>(null);
+  const [freshnessPanelOpen, setFreshnessPanelOpen] = useState(false);
+  const [sectionRegenModalOpen, setSectionRegenModalOpen] = useState(false);
+  const [fullRegenModalOpen, setFullRegenModalOpen] = useState(false);
+  const [markReviewedModalOpen, setMarkReviewedModalOpen] = useState(false);
+  const [isScanningFreshness, setIsScanningFreshness] = useState(false);
+  const [highlightedSectionHeadings, setHighlightedSectionHeadings] = useState<string[]>([]);
+
+  // Phase 12 Export & Publishing States
+  const [sitePreviewModalOpen, setSitePreviewModalOpen] = useState(false);
+  const [publishModalOpen, setPublishModalOpen] = useState(false);
+
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const loadFreshnessDetail = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/documentation/${documentId}/freshness`);
+      const data = await res.json();
+      if (data.success) {
+        setFreshnessDetail(data.data);
+      }
+    } catch (e) {
+      console.error('Failed to load freshness detail:', e);
+    }
+  }, [documentId]);
 
   useEffect(() => {
     setIsLoading(true);
     Promise.all([
       fetch(`/api/documentation/${documentId}`).then(res => res.json()),
-      fetch(`/api/documentation/${documentId}/quality`).then(res => res.json())
+      fetch(`/api/documentation/${documentId}/quality`).then(res => res.json()),
+      fetch(`/api/documentation/${documentId}/freshness`).then(res => res.json()).catch(() => ({ success: false })),
     ])
-      .then(([docData, qualData]) => {
+      .then(([docData, qualData, freshData]) => {
         if (docData.success) {
           setDoc(docData.data);
           setMarkdown(docData.data.markdown);
@@ -53,6 +84,10 @@ export default function DocumentStudioPage({ params }: { params: Promise<{ docum
         if (qualData.success) {
           setQuality(qualData.data);
         }
+
+        if (freshData.success) {
+          setFreshnessDetail(freshData.data);
+        }
       })
       .catch(err => {
         console.error(err);
@@ -62,6 +97,33 @@ export default function DocumentStudioPage({ params }: { params: Promise<{ docum
         setIsLoading(false);
       });
   }, [documentId]);
+
+  const handleRunFreshnessScan = async () => {
+    if (!doc?.repositoryAnalysisId) return;
+    setIsScanningFreshness(true);
+    try {
+      await fetch(`/api/repository-analysis/${doc.repositoryAnalysisId}/freshness-scan`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ force: true }),
+      });
+      await loadFreshnessDetail();
+    } catch (e) {
+      console.error('Failed to run freshness scan:', e);
+    } finally {
+      setIsScanningFreshness(false);
+    }
+  };
+
+  const handleReviewAffectedSections = () => {
+    if (freshnessDetail?.affectedSections) {
+      const headings = freshnessDetail.affectedSections.map((s: any) => s.heading);
+      setHighlightedSectionHeadings(headings);
+      if (freshnessDetail.affectedSections[0]?.sectionId) {
+        setActiveSectionId(freshnessDetail.affectedSections[0].sectionId);
+      }
+    }
+  };
 
   const handleMarkdownChange = useCallback((newMarkdown: string) => {
     setMarkdown(newMarkdown);
@@ -90,7 +152,7 @@ export default function DocumentStudioPage({ params }: { params: Promise<{ docum
       } catch (e) {
         setSaveStatus('error');
       }
-    }, 2000); // 2 seconds debounce for quality updates
+    }, 2000);
   }, [documentId]);
 
   const handleCopy = () => {
@@ -102,26 +164,13 @@ export default function DocumentStudioPage({ params }: { params: Promise<{ docum
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'README.md';
+    a.download = `${doc?.metadata?.fileName || 'README.md'}`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
   const handleRegenerateFull = async () => {
-    const confirmed = await dialog.confirm({
-      title: "Regenerate Documentation?",
-      description: "This will replace the current README with a newly generated version. Your current edits will be lost.",
-      variant: "warning",
-      confirmText: "Regenerate",
-      cancelText: "Cancel",
-    });
-    if (!confirmed) return;
-    
-    setIsRegenerating(true);
-    // Future integration point for full regeneration API
-    setTimeout(() => {
-      setIsRegenerating(false);
-    }, 2000);
+    setFullRegenModalOpen(true);
   };
 
   const handleRegenerateSection = async (sectionId: string) => {
@@ -140,6 +189,7 @@ export default function DocumentStudioPage({ params }: { params: Promise<{ docum
           setQuality(data.data.qualityData);
         }
         setSaveStatus('saved');
+        await loadFreshnessDetail();
       } else {
         setSaveStatus('error');
       }
@@ -203,6 +253,7 @@ export default function DocumentStudioPage({ params }: { params: Promise<{ docum
         } : null);
         setCompareModalOpen(false);
         setHistoryOpen(false);
+        await loadFreshnessDetail();
       } else {
         await dialog.alert({
           title: "Restore Failed",
@@ -252,9 +303,16 @@ export default function DocumentStudioPage({ params }: { params: Promise<{ docum
     <div className="flex h-screen flex-col bg-background overflow-hidden">
       <StudioToolbar 
         documentId={documentId}
+        documentType={doc.metadata?.type || 'README'}
+        repositoryAnalysisId={doc.repositoryAnalysisId}
         repositoryName={doc.title || "Repository"}
         saveStatus={saveStatus}
         quality={quality}
+        freshnessStatus={freshnessDetail?.status || null}
+        freshnessImpactScore={freshnessDetail?.impactScore}
+        onToggleFreshness={() => setFreshnessPanelOpen(true)}
+        onOpenSitePreview={() => setSitePreviewModalOpen(true)}
+        onOpenPublishModal={() => setPublishModalOpen(true)}
         onRegenerate={handleRegenerateFull}
         onCopy={handleCopy}
         onDownload={handleDownload}
@@ -268,7 +326,7 @@ export default function DocumentStudioPage({ params }: { params: Promise<{ docum
       />
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Desktop Sections */}
+        {/* Desktop Sections Nav */}
         <div className="hidden lg:block w-64 flex-shrink-0">
           <SectionNav 
             sections={doc.sections}
@@ -314,6 +372,7 @@ export default function DocumentStudioPage({ params }: { params: Promise<{ docum
         </div>
       </div>
 
+      {/* History Side Panel */}
       <HistoryPanel
         documentId={documentId}
         currentUpdatedAt={doc.updatedAt}
@@ -331,16 +390,88 @@ export default function DocumentStudioPage({ params }: { params: Promise<{ docum
             markdown: newMarkdown, 
             updatedAt: new Date().toISOString() 
           } : null);
+          loadFreshnessDetail();
         }}
       />
 
+      {/* Phase 11 Freshness Side Panel */}
+      <FreshnessPanel
+        open={freshnessPanelOpen}
+        onOpenChange={setFreshnessPanelOpen}
+        documentId={documentId}
+        freshnessDetail={freshnessDetail}
+        onRunScan={handleRunFreshnessScan}
+        isScanning={isScanningFreshness}
+        onReviewAffectedSections={handleReviewAffectedSections}
+        onOpenSectionRegenModal={() => setSectionRegenModalOpen(true)}
+        onOpenFullRegenModal={() => setFullRegenModalOpen(true)}
+        onOpenMarkReviewedModal={() => setMarkReviewedModalOpen(true)}
+      />
+
+      {/* Phase 11 Section Regeneration Modal */}
+      <SectionRegenerationModal
+        open={sectionRegenModalOpen}
+        onOpenChange={setSectionRegenModalOpen}
+        documentId={documentId}
+        affectedSections={freshnessDetail?.affectedSections || []}
+        onRegenerateSuccess={(newMarkdown, newQuality) => {
+          setMarkdown(newMarkdown);
+          setQuality(newQuality);
+          setDoc((prev: any) => prev ? { ...prev, markdown: newMarkdown } : null);
+          loadFreshnessDetail();
+        }}
+      />
+
+      {/* Phase 11 Full Regeneration Modal */}
+      <FullRegenerationModal
+        open={fullRegenModalOpen}
+        onOpenChange={setFullRegenModalOpen}
+        documentId={documentId}
+        currentMarkdown={markdown}
+        onRegenerateSuccess={(newMarkdown, newQuality) => {
+          setMarkdown(newMarkdown);
+          setQuality(newQuality);
+          setDoc((prev: any) => prev ? { ...prev, markdown: newMarkdown } : null);
+          loadFreshnessDetail();
+        }}
+      />
+
+      {/* Phase 11 Mark as Reviewed Modal */}
+      <MarkReviewedModal
+        open={markReviewedModalOpen}
+        onOpenChange={setMarkReviewedModalOpen}
+        documentId={documentId}
+        fileName={doc?.metadata?.fileName || 'README.md'}
+        onSuccess={() => {
+          loadFreshnessDetail();
+        }}
+      />
+
+      {/* Phase 12 Site Preview Modal */}
+      <SitePreviewModal
+        open={sitePreviewModalOpen}
+        onOpenChange={setSitePreviewModalOpen}
+        repositoryAnalysisId={doc?.repositoryAnalysisId}
+        isSavePending={saveStatus === 'editing' || saveStatus === 'saving'}
+      />
+
+      {/* Phase 12 Publish Modal */}
+      <PublishModal
+        open={publishModalOpen}
+        onOpenChange={setPublishModalOpen}
+        repositoryAnalysisId={doc?.repositoryAnalysisId}
+        qualityScore={quality?.overallScore}
+        freshnessStatus={freshnessDetail?.status}
+      />
+
+      {/* Version Compare Modal */}
       {compareBaseVersion && (
         <VersionCompareModal
           documentId={documentId}
           baseVersionId={compareBaseVersion.versionId}
           baseVersionNumber={compareBaseVersion.versionNumber}
           compareVersionId="current"
-          compareVersionNumber={(quality?.overallScore || 0) > 0 ? 0 : 0} // Standard dynamic title handles it
+          compareVersionNumber={0}
           baseQualityScore={compareBaseVersion.qualityScore}
           compareQualityScore={quality?.overallScore}
           open={compareModalOpen}

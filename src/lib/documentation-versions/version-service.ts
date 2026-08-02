@@ -93,8 +93,10 @@ export class VersionService {
     qualityData?: any;
     sourceType: DocumentationVersionSource;
     sourceLabel?: string;
+    baselineSnapshotId?: string | null;
+    baselineUpdatedAt?: Date | null;
   }): Promise<DocumentationVersion | null> {
-    const { documentId, markdown, sections, sourceType, sourceLabel } = params;
+    const { documentId, markdown, sections, sourceType, sourceLabel, baselineSnapshotId, baselineUpdatedAt } = params;
 
     // Validate size limit (50k characters)
     if (markdown.length > 50000) {
@@ -146,6 +148,8 @@ export class VersionService {
           qualityData: finalQualityData || undefined,
           sourceType,
           sourceLabel: sourceLabel || this.getDefaultSourceLabel(sourceType, nextNumber),
+          baselineSnapshotId: baselineSnapshotId || undefined,
+          baselineUpdatedAt: baselineUpdatedAt || undefined,
         }
       });
     });
@@ -417,7 +421,9 @@ export class VersionService {
           metadata: targetVersion.metadata || undefined,
           qualityScore: newQuality.overallScore,
           qualityData: newQuality as any,
-          qualityEvaluatedAt: new Date(newQuality.evaluatedAt)
+          qualityEvaluatedAt: new Date(newQuality.evaluatedAt),
+          baselineSnapshotId: targetVersion.baselineSnapshotId || undefined,
+          baselineUpdatedAt: targetVersion.baselineUpdatedAt || undefined,
         }
       });
 
@@ -434,7 +440,9 @@ export class VersionService {
           qualityScore: newQuality.overallScore,
           qualityData: newQuality as any,
           sourceType: 'RESTORE',
-          sourceLabel: `Restored from Version ${targetVersion.versionNumber}`
+          sourceLabel: `Restored from Version ${targetVersion.versionNumber}`,
+          baselineSnapshotId: targetVersion.baselineSnapshotId || undefined,
+          baselineUpdatedAt: targetVersion.baselineUpdatedAt || undefined,
         }
       });
 

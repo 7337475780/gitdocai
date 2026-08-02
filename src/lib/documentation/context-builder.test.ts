@@ -5,6 +5,7 @@ import { RepositoryAnalysisResult } from '@/types';
 describe('ContextBuilder', () => {
   it('should build a compact context and filter unnecessary files', () => {
     const mockAnalysis: RepositoryAnalysisResult = {
+      analysisId: 'test-analysis-id',
       repositoryName: 'test-repo',
       owner: 'test-owner',
       url: 'https://github.com/test/repo',
