@@ -50,7 +50,7 @@ export function TemplatesSection() {
               Documentation that fits your project.
             </h2>
             <p className="text-lg text-muted-foreground max-w-xl">
-              Start with a beautifully crafted layout and customize it to match your project's needs.
+              Start with a beautifully crafted layout and customize it to match your project&apos;s needs.
             </p>
           </div>
           <Link href="/templates">

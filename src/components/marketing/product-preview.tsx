@@ -154,11 +154,11 @@ export function ProductPreview() {
                 <div className="space-y-2">
                   <div className="p-3 bg-secondary/50 rounded-lg border border-border text-xs text-muted-foreground flex gap-2 items-start">
                     <Sparkles className="w-3.5 h-3.5 text-brand-amber shrink-0 mt-0.5" />
-                    <span>Add "Environment Variables" section found in <code className="text-foreground">.env.example</code>.</span>
+                    <span>Add &quot;Environment Variables&quot; section found in <code className="text-foreground">.env.example</code>.</span>
                   </div>
                   <div className="p-3 bg-secondary/50 rounded-lg border border-border text-xs text-muted-foreground flex gap-2 items-start">
                     <Sparkles className="w-3.5 h-3.5 text-brand-cyan shrink-0 mt-0.5" />
-                    <span>Expand "Deployment" section with Docker config details.</span>
+                    <span>Expand &quot;Deployment&quot; section with Docker config details.</span>
                   </div>
                 </div>
               </div>

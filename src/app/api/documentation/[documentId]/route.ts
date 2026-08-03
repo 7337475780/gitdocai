@@ -71,6 +71,7 @@ export async function GET(
         sections: sections,
         metadata: metadata,
         qualityScore: doc.qualityScore,
+        revision: (doc as any).revision || 1,
         generation: {
           provider: doc.generatedProvider,
           model: doc.generatedModel,
@@ -156,6 +157,7 @@ export async function PATCH(
       qualityData: quality as any,
       qualityEvaluatedAt: new Date(quality.evaluatedAt),
       metadata: newMetadata,
+      expectedRevision: typeof body.expectedRevision === 'number' ? body.expectedRevision : undefined,
     });
 
     if (!updatedDoc) {
@@ -173,11 +175,27 @@ export async function PATCH(
         sections,
         metadata: newMetadata,
         qualityScore: updatedDoc.qualityScore,
-        qualityData: quality
+        qualityData: quality,
+        revision: (updatedDoc as any).revision || 1,
       }
     });
 
   } catch (error: any) {
+    if (error?.code === 'DOCUMENT_CONFLICT') {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'DOCUMENT_CONFLICT',
+            message: error.message || 'Document conflict detected.',
+            latestRevision: error.latestRevision,
+            updatedAt: error.updatedAt,
+          },
+        },
+        { status: 409 }
+      );
+    }
+
     console.error('PATCH /api/documentation/[documentId] error:', error);
     return NextResponse.json(
       { error: 'An unexpected error occurred while saving.' },

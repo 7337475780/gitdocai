@@ -57,7 +57,7 @@ export const freshnessService = {
     // 3. Process documents and evaluate freshness impacts
     const documents = analysis.documents;
 
-    let totalChecked = documents.length;
+    const totalChecked = documents.length;
     let upToDateCount = 0;
     let reviewRecommendedCount = 0;
     let outdatedCount = 0;

@@ -48,7 +48,7 @@ export async function POST(
     
     const newSectionContent = orchestrationResult.result.markdown;
 
-    let newFullMarkdown = doc.markdown.replace(targetSection.content.trim(), newSectionContent.trim());
+    const newFullMarkdown = doc.markdown.replace(targetSection.content.trim(), newSectionContent.trim());
     
     // Validate
     let cleanedMarkdown = newFullMarkdown;

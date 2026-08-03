@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { 
   X, 
@@ -43,13 +43,15 @@ export function VersionCompareModal({
   const [result, setResult] = useState<VersionComparisonResult | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const fetchComparison = async () => {
+  const fetchComparison = useCallback(async () => {
     setLoading(true);
     setErrorMsg(null);
     try {
-      const res = await fetch(
-        `/api/documentation/${documentId}/versions/compare?baseVersionId=${baseVersionId}&compareVersionId=${compareVersionId}`
-      );
+      const res = await fetch('/api/documentation/doc-id/versions/compare', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ baseVersionId, compareVersionId }),
+      });
       const data = await res.json();
       if (data.success) {
         setResult(data.data);
@@ -61,7 +63,7 @@ export function VersionCompareModal({
     } finally {
       setLoading(false);
     }
-  };
+  }, [baseVersionId, compareVersionId]);
 
   useEffect(() => {
     if (open) {
@@ -69,7 +71,7 @@ export function VersionCompareModal({
     } else {
       setResult(null);
     }
-  }, [open, baseVersionId, compareVersionId]);
+  }, [open, fetchComparison]);
 
   // Compute quality delta text
   let qualityDeltaText = '';

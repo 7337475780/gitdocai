@@ -70,6 +70,12 @@ export class AIOrchestrator {
         continue;
       }
 
+      const circuitBreaker = (await import('./reliability/provider-circuit-breaker')).circuitBreakerRegistry.getBreaker(providerId);
+      if (!circuitBreaker.canExecute()) {
+        console.warn(`AIOrchestrator: Circuit for provider ${providerId} is OPEN. Skipping.`);
+        continue;
+      }
+
       if (pIdx > 0) {
         providerFallbackUsed = true;
       }
@@ -100,6 +106,7 @@ export class AIOrchestrator {
           console.log(`AIOrchestrator: Attempt ${attemptCount}. Provider: ${providerId}, Model: ${model}`);
           
           const result = await operation(provider, model, config.requestTimeoutMs);
+          circuitBreaker.recordSuccess();
 
           // Success logging
           console.log(JSON.stringify({
@@ -124,6 +131,7 @@ export class AIOrchestrator {
           };
 
         } catch (error: any) {
+          circuitBreaker.recordFailure();
           const errorCode = error.code || 'UNKNOWN_ERROR';
           const retryable = error.retryable !== false;
           

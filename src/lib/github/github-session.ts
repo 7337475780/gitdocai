@@ -5,6 +5,12 @@ export interface GitHubSessionData {
   accessToken?: string;
   oauthState?: string;
   returnTo?: string;
+  user?: {
+    login: string;
+    name: string;
+    avatarUrl?: string;
+    email?: string;
+  };
 }
 
 const sessionOptions: SessionOptions = {

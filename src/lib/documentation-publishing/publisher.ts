@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import prisma from '../database/prisma';
 import { DocumentationPublishStatus, DocumentationSiteStatus } from '../documentation-site/site-types';
 import { PublishingError } from './publisher-errors';
@@ -169,7 +170,7 @@ export const publishingService = {
       if (!prevEntry) {
         changedDocuments.push(`${docType} added`);
       } else {
-        const currentHash = require('crypto').createHash('sha256').update(doc.markdown).digest('hex');
+        const currentHash = crypto.createHash('sha256').update(doc.markdown).digest('hex');
         if (prevEntry.contentHash !== currentHash) {
           changedDocuments.push(`${docType} updated`);
         }

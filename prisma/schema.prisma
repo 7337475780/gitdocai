@@ -49,6 +49,7 @@ model RepositoryAnalysis {
   snapshots          RepositorySnapshot[]
   freshnessScans     DocumentationFreshnessScan[]
   site               DocumentationSite?
+  activities         DocumentationActivity[]
 
   @@index([repositoryOwner, repositoryName])
   @@index([createdAt])
@@ -147,12 +148,15 @@ model Documentation {
   generationTimeMs     Int?
   attemptCount         Int?
 
+  revision             Int      @default(1)
+
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
   improvementProposals DocumentationImprovementProposal[]
   versions             DocumentationVersion[]
   freshnessImpacts     DocumentationFreshnessImpact[]
+  activities           DocumentationActivity[]
 
   @@index([repositoryAnalysisId])
   @@index([updatedAt])
@@ -253,3 +257,58 @@ model DocumentationSitePublish {
 
   @@index([documentationSiteId, createdAt])
 }
+
+enum DocumentationActivityType {
+  DOCUMENT_GENERATED
+  DOCUMENT_UPDATED
+  DOCUMENT_RESTORED
+  QUALITY_EVALUATED
+  FRESHNESS_SCANNED
+  SECTION_REGENERATED
+  DOCUMENT_COMMITTED
+  DOCUMENT_EXPORTED
+  SITE_PREVIEWED
+  SITE_PUBLISHED
+  SITE_REPUBLISHED
+}
+
+model DocumentationActivity {
+  id                   String                   @id @default(cuid())
+
+  repositoryAnalysisId String
+  repositoryAnalysis   RepositoryAnalysis       @relation(fields: [repositoryAnalysisId], references: [id], onDelete: Cascade)
+
+  documentId           String?
+  document             Documentation?           @relation(fields: [documentId], references: [id], onDelete: SetNull)
+
+  type                 DocumentationActivityType
+  summary              String
+  metadata             Json?
+
+  createdAt            DateTime                 @default(now())
+
+  @@index([repositoryAnalysisId, createdAt])
+  @@index([documentId])
+}
+
+model IdempotencyRecord {
+  id                 String    @id @default(cuid())
+
+  userId             String
+  key                String
+  operation          String
+
+  requestFingerprint String
+  status             String    // PROCESSING | COMPLETED | FAILED
+  responseStatus     Int?
+  responseBody       Json?
+
+  createdAt          DateTime  @default(now())
+  expiresAt          DateTime
+  completedAt        DateTime?
+
+  @@unique([userId, key, operation])
+  @@index([expiresAt])
+}
+
+

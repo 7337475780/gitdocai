@@ -9,12 +9,14 @@ vi.mock('./config/ai-config', () => ({
 }));
 
 import { getAIConfig } from './config/ai-config';
+import { circuitBreakerRegistry } from './reliability/provider-circuit-breaker';
 
 describe('AIOrchestrator', () => {
   let orchestrator: AIOrchestrator;
 
   beforeEach(() => {
     vi.resetAllMocks();
+    circuitBreakerRegistry.resetAll();
     orchestrator = new AIOrchestrator();
     
     // We will inject mock providers to test fallback logic

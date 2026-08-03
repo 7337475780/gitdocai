@@ -120,7 +120,7 @@ export class MarkdownAnalyzer {
 
     // 7. Paragraph and Word counts
     let paragraphCount = 0;
-    let wordCount = markdown.split(/\s+/).filter(Boolean).length;
+    const wordCount = markdown.split(/\s+/).filter(Boolean).length;
     let currentParagraphLines: string[] = [];
 
     // Let's count paragraph blocks outside of code blocks and headings

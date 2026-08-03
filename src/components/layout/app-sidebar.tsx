@@ -30,6 +30,18 @@ const NAV_ITEMS = [
 
 export function AppSidebar({ className }: { className?: string }) {
   const pathname = usePathname();
+  const [user, setUser] = React.useState<{ name: string; email: string; avatarUrl?: string } | null>(null);
+
+  React.useEffect(() => {
+    fetch('/api/github/status')
+      .then(res => res.json())
+      .then(json => {
+        if (json.success && json.data.connected && json.data.user) {
+          setUser(json.data.user);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <div
@@ -109,22 +121,23 @@ export function AppSidebar({ className }: { className?: string }) {
 
       {/* User Profile */}
       <div className="border-t border-border p-4">
-        <button className="flex w-full items-center gap-3 rounded-lg p-2 text-left transition-colors hover:bg-secondary/50">
-          <img
-            src="https://api.dicebear.com/7.x/notionists/svg?seed=Alex&backgroundColor=3b82f6"
-            alt="User avatar"
-            className="h-9 w-9 rounded-full border border-border bg-secondary"
-          />
+        <div className="flex w-full items-center gap-3 rounded-lg p-2 text-left">
+          <div className="h-9 w-9 rounded-full border border-border bg-secondary flex items-center justify-center text-xs font-bold text-brand-cyan overflow-hidden shrink-0">
+            {user?.avatarUrl ? (
+              <img src={user.avatarUrl} alt={user.name} className="h-full w-full object-cover" />
+            ) : (
+              <span>{user?.name ? user.name.charAt(0).toUpperCase() : "G"}</span>
+            )}
+          </div>
           <div className="flex-1 overflow-hidden">
             <p className="truncate text-sm font-medium text-foreground">
-              Alex Johnson
+              {user?.name || "Developer Session"}
             </p>
             <p className="truncate text-xs text-muted-foreground">
-              alex@example.com
+              {user?.email || (user ? "Connected" : "Local Workspace")}
             </p>
           </div>
-          <ChevronDown className="h-4 w-4 text-muted-foreground" />
-        </button>
+        </div>
       </div>
     </div>
   );

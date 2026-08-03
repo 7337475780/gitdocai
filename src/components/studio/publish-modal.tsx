@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, Globe, AlertTriangle, Check, Loader2, Copy, ExternalLink, RefreshCw, History } from 'lucide-react';
 import { DocumentationPublishStatus } from '@/lib/documentation-site/site-types';
@@ -26,13 +26,7 @@ export function PublishModal({
   const [copied, setCopied] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
 
-  useEffect(() => {
-    if (open && repositoryAnalysisId) {
-      loadHistory();
-    }
-  }, [open, repositoryAnalysisId]);
-
-  const loadHistory = async () => {
+  const loadHistory = useCallback(async () => {
     if (!repositoryAnalysisId) return;
     try {
       const res = await fetch(`/api/repository-analysis/${repositoryAnalysisId}/site/publishes`);
@@ -44,7 +38,13 @@ export function PublishModal({
     } catch (e) {
       console.error('Failed to load publish history:', e);
     }
-  };
+  }, [repositoryAnalysisId]);
+
+  useEffect(() => {
+    if (open && repositoryAnalysisId) {
+      loadHistory();
+    }
+  }, [open, repositoryAnalysisId, loadHistory]);
 
   const handlePublish = async () => {
     if (!repositoryAnalysisId) return;

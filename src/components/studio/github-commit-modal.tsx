@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, CheckCircle2, CircleAlert, Loader2, GitCommitHorizontal, ExternalLink } from 'lucide-react';
 import { GithubIcon } from '@/components/ui/icons';
@@ -31,37 +31,7 @@ export function GitHubCommitModal({ open, onOpenChange, documentId }: GitHubComm
   const [commitSuccess, setCommitSuccess] = useState<{ commitUrl: string; fileUrl: string } | null>(null);
   const [commitError, setCommitError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (open) {
-      // Reset state on open
-      setCommitSuccess(null);
-      setCommitError(null);
-      setRepositories([]);
-      setSelectedRepo('');
-      setSelectedBranch('');
-      fetchRepositories();
-    }
-  }, [open]);
-
-  useEffect(() => {
-    if (selectedRepo) {
-      const [owner, name] = selectedRepo.split('/');
-      fetchBranches(owner, name);
-    } else {
-      setBranches([]);
-      setSelectedBranch('');
-    }
-  }, [selectedRepo]);
-
-  useEffect(() => {
-    if (selectedRepo && selectedBranch && filePath) {
-      checkFileStatus();
-    } else {
-      setFileStatus(null);
-    }
-  }, [selectedRepo, selectedBranch, filePath]);
-
-  const fetchRepositories = async () => {
+  const fetchRepositories = useCallback(async () => {
     setLoadingRepos(true);
     setRepoError(null);
     try {
@@ -80,9 +50,9 @@ export function GitHubCommitModal({ open, onOpenChange, documentId }: GitHubComm
     } finally {
       setLoadingRepos(false);
     }
-  };
+  }, []);
 
-  const fetchBranches = async (owner: string, repo: string) => {
+  const fetchBranches = useCallback(async (owner: string, repo: string) => {
     setLoadingBranches(true);
     try {
       const res = await fetch(`/api/github/repositories/${owner}/${repo}/branches`);
@@ -101,27 +71,57 @@ export function GitHubCommitModal({ open, onOpenChange, documentId }: GitHubComm
     } finally {
       setLoadingBranches(false);
     }
-  };
+  }, [repositories]);
 
-  const checkFileStatus = async () => {
+  const checkFileStatus = useCallback(async () => {
     if (!selectedRepo || !selectedBranch || !filePath) return;
     setLoadingStatus(true);
     try {
       const [owner, repo] = selectedRepo.split('/');
-      const params = new URLSearchParams({ path: filePath, branch: selectedBranch });
-      const res = await fetch(`/api/github/repositories/${owner}/${repo}/file-status?${params}`);
+      const url = `/api/github/repositories/${owner}/${repo}/file-status?branch=${encodeURIComponent(selectedBranch)}&path=${encodeURIComponent(filePath)}`;
+      const res = await fetch(url);
       const data = await res.json();
       if (data.success) {
         setFileStatus(data.data.exists ? 'update' : 'create');
-      } else {
-        setFileStatus(null);
       }
     } catch (e) {
-      setFileStatus(null);
+      setFileStatus('create');
     } finally {
       setLoadingStatus(false);
     }
-  };
+  }, [selectedRepo, selectedBranch, filePath]);
+
+  useEffect(() => {
+    if (open) {
+      // Reset state on open
+      setCommitSuccess(null);
+      setCommitError(null);
+      setRepositories([]);
+      setSelectedRepo('');
+      setSelectedBranch('');
+      fetchRepositories();
+    }
+  }, [open, fetchRepositories]);
+
+  useEffect(() => {
+    if (selectedRepo) {
+      const [owner, name] = selectedRepo.split('/');
+      fetchBranches(owner, name);
+    } else {
+      setBranches([]);
+      setSelectedBranch('');
+    }
+  }, [selectedRepo, fetchBranches]);
+
+  useEffect(() => {
+    if (selectedRepo && selectedBranch && filePath) {
+      checkFileStatus();
+    } else {
+      setFileStatus(null);
+    }
+  }, [selectedRepo, selectedBranch, filePath, checkFileStatus]);
+
+
 
   const handleCommit = async () => {
     if (!selectedRepo || !selectedBranch || !filePath || !commitMessage) return;

@@ -69,6 +69,13 @@ export function AnalysisSuccessState() {
           <SecondaryButton onClick={reset} className="h-12 px-6">
             Analyze Another
           </SecondaryButton>
+          {result.analysisId && (
+            <Link href={`/repository/${result.analysisId}/intelligence`}>
+              <SecondaryButton className="h-12 px-6 border-brand-cyan/30 text-brand-cyan hover:bg-brand-cyan/10">
+                Documentation Overview
+              </SecondaryButton>
+            </Link>
+          )}
           <GradientButton onClick={() => setIsConfiguring(true)} className="h-12 px-8 flex items-center gap-2">
             Generate Documentation
             <ChevronRight className="w-4 h-4" />

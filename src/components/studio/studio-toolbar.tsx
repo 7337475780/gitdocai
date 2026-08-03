@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { useDialog } from '@/components/ui/dialog-provider';
-import { Download, Copy, RefreshCw, CheckCircle2, Loader2, CircleAlert, GitCommitHorizontal, ExternalLink, History } from 'lucide-react';
+import { Download, Copy, RefreshCw, CheckCircle2, Loader2, CircleAlert, GitCommitHorizontal, ExternalLink, History, LayoutDashboard } from 'lucide-react';
 import { GradientButton } from '@/components/ui/button';
 import { DocumentSection } from '@/lib/documentation/section-parser';
 import { DocumentationQualityResult } from '@/lib/documentation-quality/quality-types';
@@ -68,11 +69,7 @@ export function StudioToolbar({
   const [qualityPanelOpen, setQualityPanelOpen] = useState(false);
   const [showLowQualityWarning, setShowLowQualityWarning] = useState(false);
 
-  useEffect(() => {
-    checkGithubStatus();
-  }, []);
-
-  const checkGithubStatus = async () => {
+  const checkGithubStatus = useCallback(async () => {
     try {
       const res = await fetch('/api/github/status');
       const data = await res.json();
@@ -82,7 +79,11 @@ export function StudioToolbar({
     } finally {
       setCheckingGithub(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    checkGithubStatus();
+  }, [checkGithubStatus]);
 
   const handleConnectGithub = () => {
     const returnTo = window.location.pathname;
@@ -131,6 +132,15 @@ export function StudioToolbar({
           <span className="font-semibold text-foreground">GitDoc AI</span>
           <span className="text-muted-foreground">/</span>
           <span className="text-sm font-medium text-foreground">{repositoryName}</span>
+          {repositoryAnalysisId && (
+            <Link
+              href={`/repository/${repositoryAnalysisId}/intelligence`}
+              className="ml-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold text-brand-cyan bg-brand-cyan/10 border border-brand-cyan/20 hover:bg-brand-cyan/20 transition-colors"
+            >
+              <LayoutDashboard className="h-3 w-3" />
+              Documentation Overview
+            </Link>
+          )}
         </div>
 
         <div className="hidden sm:flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-background/50 border border-border">

@@ -63,10 +63,6 @@ export function SitePreviewModal({
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
         <Dialog.Content className="fixed left-[50%] top-[50%] z-50 w-full max-w-6xl h-[90vh] translate-x-[-50%] translate-y-[-50%] border border-border bg-card shadow-2xl rounded-2xl overflow-hidden flex flex-col data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
-          <head>
-            <meta name="robots" content="noindex, nofollow" />
-          </head>
-
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-3.5 border-b border-border bg-background/80 backdrop-blur">
             <div className="flex items-center gap-3">

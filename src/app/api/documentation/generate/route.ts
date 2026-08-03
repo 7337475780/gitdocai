@@ -120,7 +120,7 @@ export async function POST(req: Request) {
   } catch (error: any) {
     console.error('Generation error:', error);
     
-    let code = error?.code || 'AI_GENERATION_FAILED';
+    const code = error?.code || 'AI_GENERATION_FAILED';
     let message = error?.message || 'We could not generate documentation. Please try again.';
 
     if (code === 'ALL_AI_PROVIDERS_FAILED') {
