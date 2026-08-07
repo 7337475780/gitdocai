@@ -14,12 +14,11 @@ import {
   GitBranch,
   Settings,
   Zap,
-  ChevronDown,
 } from "lucide-react";
 import { GradientButton } from "@/components/ui/button";
 
 const NAV_ITEMS = [
-  { name: "Dashboard", href: "/studio", icon: LayoutDashboard },
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "AI Analyze", href: "/analyze", icon: Sparkles },
   { name: "Documentation", href: "/docs", icon: FileText },
   { name: "Templates", href: "/templates", icon: LayoutTemplate },
@@ -53,6 +52,7 @@ export function AppSidebar({ className }: { className?: string }) {
       {/* Logo */}
       <div className="flex h-16 shrink-0 items-center px-6">
         <div className="flex items-center gap-2">
+          {/* eslint-disable-next-line @next/next/no-img-element -- Local branding logo asset */}
           <img
             src="/logo.png"
             alt="GitDoc AI Logo"
@@ -124,6 +124,7 @@ export function AppSidebar({ className }: { className?: string }) {
         <div className="flex w-full items-center gap-3 rounded-lg p-2 text-left">
           <div className="h-9 w-9 rounded-full border border-border bg-secondary flex items-center justify-center text-xs font-bold text-brand-cyan overflow-hidden shrink-0">
             {user?.avatarUrl ? (
+              /* eslint-disable-next-line @next/next/no-img-element -- Dynamic GitHub user avatar */
               <img src={user.avatarUrl} alt={user.name} className="h-full w-full object-cover" />
             ) : (
               <span>{user?.name ? user.name.charAt(0).toUpperCase() : "G"}</span>

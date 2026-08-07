@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { EnvironmentSchema } from './config/env-schema';
 import { MarkdownSanitizer } from './security/markdown-sanitizer';
-import { RateLimiter } from './rate-limit/rate-limiter';
 import { CircuitBreaker } from './ai/reliability/provider-circuit-breaker';
 import { ProviderClassification } from './ai/reliability/provider-classification';
 import { Redaction } from './observability/redaction';

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { 
   CheckCircle2, ChevronRight, FolderGit2, FileCode2, Globe, Library, Palette, 
-  Server, Package, FileJson, FileText, Settings, PlayCircle, ShieldCheck, ChevronDown, ChevronRight as ChevronRightIcon
+  Server, Package, FileJson, FileText, Settings, PlayCircle
 } from "lucide-react";
 import { useAnalysisStore } from "@/store/useAnalysisStore";
 import { GradientButton, SecondaryButton } from "@/components/ui/button";
@@ -30,7 +30,6 @@ const IconMap: Record<string, React.FC<any>> = {
 
 export function AnalysisSuccessState() {
   const { result, reset } = useAnalysisStore();
-  const [expandedFolder, setExpandedFolder] = React.useState<boolean>(true);
   const [isConfiguring, setIsConfiguring] = React.useState(false);
 
   if (!result) return null;
@@ -76,7 +75,7 @@ export function AnalysisSuccessState() {
               </SecondaryButton>
             </Link>
           )}
-          <GradientButton onClick={() => setIsConfiguring(true)} className="h-12 px-8 flex items-center gap-2">
+          <GradientButton onClick={() => setIsConfiguring(true)} className="h-12 px-8 flex items-center gap-2 text-base sm:text-lg whitespace-nowrap">
             Generate Documentation
             <ChevronRight className="w-4 h-4" />
           </GradientButton>

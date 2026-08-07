@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { documentationService } from '@/lib/documentation/documentation.service';
+import { documentationService } from '../../../../lib/documentation/documentation.service';
 import { repositoryAnalysisService } from '@/lib/repository-analysis/repository-analysis.service';
 import { AIOrchestrator } from '@/lib/ai/ai-orchestrator';
 import { ContextBuilder } from '@/lib/documentation/context-builder';
@@ -13,6 +13,12 @@ const GenerateRequestSchema = z.object({
   analysisId: z.string(),
   template: z.enum(['professional', 'opensource', 'api', 'portfolio', 'library', 'minimal']).default('professional'),
   tone: z.enum(['professional', 'concise', 'technical']).default('professional'),
+  title: z.string().optional(),
+  includeInstallation: z.boolean().optional(),
+  includeUsage: z.boolean().optional(),
+  includeAPI: z.boolean().optional(),
+  includeContributing: z.boolean().optional(),
+  detailLevel: z.enum(['concise', 'standard', 'detailed']).optional(),
 });
 
 export async function POST(req: Request) {
@@ -24,7 +30,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: { code: 'INVALID_REQUEST', message: 'Invalid generation options.' } }, { status: 400 });
     }
 
-    const { analysisId, template, tone } = result.data;
+    const {
+      analysisId,
+      template,
+      tone,
+      title,
+      includeInstallation,
+      includeUsage,
+      includeAPI,
+      includeContributing,
+      detailLevel,
+    } = result.data;
     const analysisRecord = await repositoryAnalysisService.getAnalysisById(analysisId);
 
     if (!analysisRecord) {
@@ -45,22 +61,29 @@ export async function POST(req: Request) {
     const context = ContextBuilder.build(analysis);
     const orchestrator = new AIOrchestrator();
 
-    const orchestrationResult = await orchestrator.generate(context, { template, tone });
+    const orchestrationResult = await orchestrator.generate(context, {
+      template,
+      tone,
+      title,
+      includeInstallation,
+      includeUsage,
+      includeAPI,
+      includeContributing,
+      detailLevel,
+    });
     const rawMarkdown = orchestrationResult.result.markdown;
 
     // Validate and clean markdown
     let cleanedMarkdown: string;
     try {
       cleanedMarkdown = MarkdownValidator.validate(rawMarkdown);
-    } catch (e) {
+    } catch {
       throw new Error('DOCUMENT_VALIDATION_FAILED');
     }
 
     // Parse sections and pre-score
     const sections = SectionParser.parse(cleanedMarkdown);
     const quality = QualityEngine.evaluate(cleanedMarkdown, analysis);
-
-    const title = sections.find(s => s.level === 1)?.title || analysisRecord.repositoryName;
 
     const metadata = {
       wordCount: cleanedMarkdown.split(/\s+/).filter(Boolean).length,

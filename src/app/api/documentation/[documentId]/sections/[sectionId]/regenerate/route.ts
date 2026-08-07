@@ -21,7 +21,7 @@ export async function POST(
       if (body && typeof body.instruction === 'string') {
         instruction = body.instruction.trim();
       }
-    } catch (e) {
+    } catch {
       // Body is optional
     }
 
@@ -54,7 +54,7 @@ export async function POST(
     let cleanedMarkdown = newFullMarkdown;
     try {
       cleanedMarkdown = MarkdownValidator.validate(newFullMarkdown);
-    } catch(e: any) {
+    } catch {
       // ignore
     }
 

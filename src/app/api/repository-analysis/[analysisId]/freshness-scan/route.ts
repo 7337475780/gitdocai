@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { freshnessService } from '@/lib/documentation-freshness/freshness-service';
 import { FreshnessError } from '@/lib/documentation-freshness/freshness-errors';
+import { ActivityService } from '@/lib/documentation-intelligence/activity-service';
 
 export async function POST(
   req: NextRequest,
@@ -12,6 +13,17 @@ export async function POST(
     const force = !!body.force;
 
     const scanSummary = await freshnessService.runFreshnessScan(analysisId, force);
+
+    try {
+      await ActivityService.logActivity({
+        repositoryAnalysisId: analysisId,
+        type: 'FRESHNESS_SCANNED',
+        summary: `Completed freshness scan: ${scanSummary.status}`,
+        metadata: { status: scanSummary.status }
+      });
+    } catch (activityErr) {
+      console.error('Failed to log freshness scan activity:', activityErr);
+    }
 
     return NextResponse.json({
       success: true,

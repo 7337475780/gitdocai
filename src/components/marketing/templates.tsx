@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { LayoutTemplate, ChevronRight, Briefcase, Globe, FileJson, User, Package, Circle } from "lucide-react";
+import { ChevronRight, Briefcase, Globe, FileJson, User, Package, Circle } from "lucide-react";
 import { GlassCard } from "@/components/ui/card";
 import { SecondaryButton } from "@/components/ui/button";
 

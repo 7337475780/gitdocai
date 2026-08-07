@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { VersionService } from '@/lib/documentation-versions/version-service';
 import { VERSION_ERRORS } from '@/lib/documentation-versions/version-errors';
+import { ActivityService } from '@/lib/documentation-intelligence/activity-service';
 
 export async function POST(
   request: NextRequest,
@@ -16,6 +17,18 @@ export async function POST(
       expectedUpdatedAt: body.expectedUpdatedAt,
       expectedContentHash: body.expectedContentHash
     });
+
+    try {
+      await ActivityService.logActivity({
+        repositoryAnalysisId: result.document.repositoryAnalysisId,
+        documentId: result.document.id,
+        type: 'DOCUMENT_RESTORED',
+        summary: `Restored document to Version ${result.version.versionNumber}`,
+        metadata: { versionNumber: result.version.versionNumber, versionId: result.version.id }
+      });
+    } catch (activityErr) {
+      console.error('Failed to log document restore activity:', activityErr);
+    }
 
     return NextResponse.json({
       success: true,

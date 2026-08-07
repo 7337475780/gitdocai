@@ -4,13 +4,11 @@ import {
   Check, 
   AlertTriangle, 
   X, 
-  ChevronRight, 
   Sparkles, 
   Eye, 
   Trash2, 
   Loader2, 
   CheckCircle2, 
-  ArrowRight,
   TrendingUp
 } from 'lucide-react';
 import { DocumentationQualityResult, DocumentationQualityIssue } from '@/lib/documentation-quality/quality-types';
@@ -109,7 +107,7 @@ export function QualityPanel({
       } else {
         setErrorMsg(data.error?.message || 'Failed to generate suggestion.');
       }
-    } catch (e) {
+    } catch {
       setErrorMsg('Failed to call suggestion generator.');
     } finally {
       setGeneratingIssueId(null);
@@ -133,7 +131,7 @@ export function QualityPanel({
       } else {
         setErrorMsg(data.error?.message || 'Failed to apply suggestion.');
       }
-    } catch (e) {
+    } catch {
       setErrorMsg('Failed to apply suggestion.');
     } finally {
       setApplyingProposal(false);
@@ -147,11 +145,11 @@ export function QualityPanel({
     <>
       <button 
         onClick={() => onOpenChange(true)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-background/50 border border-border hover:bg-white/5 transition-colors group cursor-pointer"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-background/50 border border-border hover:bg-white/5 transition-colors group cursor-pointer whitespace-nowrap shrink-0"
         aria-label={`Documentation quality score ${quality.overallScore}. Click to view details.`}
       >
         <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground">Quality</span>
-        <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full border ${scoreColorClass} ${badgeBgClass} transition-all duration-300`}>
+        <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full border ${scoreColorClass} ${badgeBgClass} transition-all duration-300 whitespace-nowrap shrink-0`}>
           <span className="text-xs font-bold">{quality.overallScore}</span>
           <span className="text-[10px] uppercase tracking-wider opacity-85">{quality.overallScore >= 90 ? 'Excellent' : quality.overallScore >= 75 ? 'Good' : quality.overallScore >= 60 ? 'Fair' : 'Needs work'}</span>
         </div>

@@ -35,6 +35,7 @@ export function SiteNavbar() {
       <div className="container mx-auto px-6 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3 group z-50">
+          {/* eslint-disable-next-line @next/next/no-img-element -- Local logo asset */}
           <img
             src="/logo.png"
             alt="GitDoc AI Logo"

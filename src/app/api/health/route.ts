@@ -6,7 +6,7 @@ export async function GET() {
 
   try {
     await prisma.$queryRaw`SELECT 1`;
-  } catch (e) {
+  } catch {
     dbStatus = 'unhealthy';
   }
 

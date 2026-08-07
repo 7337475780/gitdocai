@@ -21,6 +21,11 @@ export interface GitHubRepository {
   fullName: string;
   defaultBranch: string;
   private: boolean;
+  language?: string | null;
+  updatedAt?: string;
+  visibility?: string;
+  analysisId?: string | null;
+  analysisStatus?: 'COMPLETED' | 'NONE';
 }
 
 export interface GitHubBranch {

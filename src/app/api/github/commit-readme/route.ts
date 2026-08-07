@@ -3,6 +3,7 @@ import { getGitHubSession } from '@/lib/github/github-session';
 import { getGitHubFileStatus, commitGitHubFile } from '@/lib/github/github-contents';
 import { GitHubCommitRequestSchema } from '@/lib/github/github-types';
 import { prisma } from '@/lib/database/prisma';
+import { ActivityService } from '@/lib/documentation-intelligence/activity-service';
 
 export async function POST(req: NextRequest) {
   try {
@@ -86,6 +87,18 @@ export async function POST(req: NextRequest) {
       success: true,
       durationMs: 0 // Mocked for structure
     }));
+
+    try {
+      await ActivityService.logActivity({
+        repositoryAnalysisId: doc.repositoryAnalysisId,
+        documentId: doc.id,
+        type: 'DOCUMENT_COMMITTED',
+        summary: `Committed ${path} to GitHub (${branch})`,
+        metadata: { repository: `${repository.owner}/${repository.name}`, branch, path, operation }
+      });
+    } catch (activityErr) {
+      console.error('Failed to log document commit activity:', activityErr);
+    }
 
     return NextResponse.json({
       success: true,

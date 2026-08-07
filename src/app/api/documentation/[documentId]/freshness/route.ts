@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { freshnessService } from '@/lib/documentation-freshness/freshness-service';
 import { FreshnessError } from '@/lib/documentation-freshness/freshness-errors';
+import { getGitHubSession } from '@/lib/github/github-session';
+import { AuthorizationService } from '@/lib/security/authorization';
+import { ForbiddenError } from '@/lib/security/security-errors';
 
 export async function GET(
   req: NextRequest,
@@ -8,6 +11,12 @@ export async function GET(
 ) {
   try {
     const { documentId } = await params;
+    const session = await getGitHubSession();
+    const userLogin = session?.user?.login;
+
+    // Enforce authorization check
+    await AuthorizationService.assertDocumentAccess(documentId, userLogin);
+
     const detail = await freshnessService.getDocumentFreshnessDetail(documentId);
 
     return NextResponse.json({
@@ -15,6 +24,15 @@ export async function GET(
       data: detail,
     });
   } catch (error: any) {
+    if (error instanceof ForbiddenError) {
+      return NextResponse.json({
+        success: false,
+        error: {
+          code: 'FORBIDDEN',
+          message: error.message,
+        }
+      }, { status: 403 });
+    }
     if (error instanceof FreshnessError) {
       return NextResponse.json(
         { success: false, error: { code: error.code, message: error.message } },

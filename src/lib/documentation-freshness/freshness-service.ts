@@ -445,19 +445,6 @@ export const freshnessService = {
       throw new FreshnessError('FRESHNESS_DOCUMENT_NOT_FOUND', `Document ${documentId} not found`, 404);
     }
 
-    const detail = await this.getDocumentFreshnessDetail(documentId);
-    const docType = (doc.metadata as any)?.type || 'README';
-
-    const prompt = buildFreshnessPrompt({
-      documentType: docType,
-      currentMarkdown: doc.markdown,
-      sections: doc.sections as any,
-      repositoryAnalysis: doc.repositoryAnalysis.analysisData,
-      reasons: detail.reasons,
-      targetSections: [], // Empty means full document
-      customInstructions: 'Regenerate complete document against latest repository analysis.',
-    });
-
     const orchestrator = new AIOrchestrator();
     const analysisObj = typeof doc.repositoryAnalysis.analysisData === 'string' ? JSON.parse(doc.repositoryAnalysis.analysisData) : doc.repositoryAnalysis.analysisData;
     const context = ContextBuilder.build(analysisObj, doc.markdown);

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import * as Popover from '@radix-ui/react-popover';
-import { Download, FileText, Archive, Globe, ChevronDown, Check, Loader2 } from 'lucide-react';
-import { GradientButton } from '@/components/ui/button';
+import { Download, FileText, Archive, Globe, ChevronDown, Loader2 } from 'lucide-react';
 
 interface ExportMenuProps {
   documentId: string;

@@ -1,4 +1,4 @@
-import { RepositoryChange, RepositoryChangeType } from './freshness-types';
+import { RepositoryChangeType } from './freshness-types';
 
 export interface DocumentRule {
   documentType: string; // 'README' | 'SETUP' | 'ARCHITECTURE' | 'API' | 'CONTRIBUTING'

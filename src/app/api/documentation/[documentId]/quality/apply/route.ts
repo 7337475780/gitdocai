@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { QualityService } from '@/lib/documentation-quality/quality-service';
 import { QualityError } from '@/lib/documentation-quality/quality-errors';
+import { prisma } from '@/lib/database/prisma';
+import { ActivityService } from '@/lib/documentation-intelligence/activity-service';
 
 export async function POST(
   request: NextRequest,
@@ -26,7 +28,25 @@ export async function POST(
       }, { status: 400 });
     }
 
+    const doc = await prisma.documentation.findUnique({
+      where: { id: documentId },
+    });
+
     const result = await QualityService.applyImprovementProposal(documentId, proposalId);
+
+    if (doc) {
+      try {
+        await ActivityService.logActivity({
+          repositoryAnalysisId: doc.repositoryAnalysisId,
+          documentId: doc.id,
+          type: 'QUALITY_EVALUATED',
+          summary: `Applied quality improvement suggestion`,
+          metadata: { proposalId, newScore: result.quality.overallScore }
+        });
+      } catch (activityErr) {
+        console.error('Failed to log quality evaluation activity:', activityErr);
+      }
+    }
 
     return NextResponse.json({
       success: true,

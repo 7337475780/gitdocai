@@ -1,4 +1,3 @@
-import { DocumentSection } from '../documentation/section-parser';
 import { AIModelGenerationResult } from './schemas/ai-response';
 
 export type AIProviderId =
@@ -30,6 +29,12 @@ export interface DocumentationContext {
 export interface GenerateReadmeOptions {
   template: 'professional' | 'opensource' | 'api' | 'portfolio' | 'library' | 'minimal';
   tone: 'professional' | 'concise' | 'technical';
+  title?: string;
+  includeInstallation?: boolean;
+  includeUsage?: boolean;
+  includeAPI?: boolean;
+  includeContributing?: boolean;
+  detailLevel?: 'concise' | 'standard' | 'detailed';
 }
 
 export interface GeneratedSectionResult {

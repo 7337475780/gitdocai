@@ -11,7 +11,6 @@ import {
   HelpCircle,
   Sparkles,
   RefreshCw,
-  Search,
   ExternalLink,
   ChevronRight,
   FileText,
@@ -20,20 +19,12 @@ import {
   ArrowRight,
   Loader2,
   X,
-  Layers,
-  Clock,
-  Eye,
-  Send,
-  SlidersHorizontal,
 } from "lucide-react";
 import { GlassCard, StatusBadge } from "@/components/ui/card";
 import { GradientButton, SecondaryButton } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
-  DocumentationHealthStatus,
   DocumentationIntelligenceData,
-  NextActionType,
-  RecommendedDocumentInfo,
 } from "@/lib/documentation-intelligence/intelligence-types";
 
 interface IntelligenceViewProps {
@@ -57,9 +48,9 @@ export function IntelligenceView({ analysisId }: IntelligenceViewProps) {
     failed: any[];
   } | null>(null);
 
-  // Issues Modal state
-  const [issuesModalOpen, setIssuesModalOpen] = React.useState(false);
-  const [activityModalOpen, setActivityModalOpen] = React.useState(false);
+  // Issues & Activity Modal state
+  const [_issuesModalOpen, setIssuesModalOpen] = React.useState(false);
+  const [_activityModalOpen, setActivityModalOpen] = React.useState(false);
 
   const fetchIntelligence = React.useCallback(
     async (forceRefresh = false) => {
@@ -78,7 +69,7 @@ export function IntelligenceView({ analysisId }: IntelligenceViewProps) {
         } else {
           setError(json.error?.message || "Failed to load documentation intelligence.");
         }
-      } catch (err: any) {
+      } catch {
         setError("Network error while loading documentation intelligence.");
       } finally {
         setIsLoading(false);
@@ -131,7 +122,7 @@ export function IntelligenceView({ analysisId }: IntelligenceViewProps) {
           failed: [{ type: "BATCH", fileName: "All", error: json.error?.message || "Generation failed" }],
         });
       }
-    } catch (err: any) {
+    } catch {
       setBatchResult({
         generated: [],
         failed: [{ type: "BATCH", fileName: "All", error: "Network error during generation." }],
@@ -145,13 +136,12 @@ export function IntelligenceView({ analysisId }: IntelligenceViewProps) {
     if (!data?.documents || data.documents.length === 0) return;
     setIsScanningFreshness(true);
     try {
-      const firstDocId = data.documents[0].id;
-      const res = await fetch(`/api/documentation/${firstDocId}/freshness/scan`, {
+      const res = await fetch(`/api/repository-analysis/${analysisId}/freshness-scan`, {
         method: "POST",
       });
       await res.json();
       await fetchIntelligence(true);
-    } catch (e) {
+    } catch {
       // Ignore
     } finally {
       setIsScanningFreshness(false);
@@ -184,7 +174,7 @@ export function IntelligenceView({ analysisId }: IntelligenceViewProps) {
     );
   }
 
-  const { repository, health, coverage, quality, freshness, publishing, nextAction, documents, attentionItems, recentActivity } = data;
+  const { repository, health, coverage, publishing, nextAction, documents, attentionItems, recentActivity } = data;
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-8 md:py-12 space-y-8">

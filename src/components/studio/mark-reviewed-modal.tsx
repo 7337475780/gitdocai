@@ -36,7 +36,7 @@ export function MarkReviewedModal({
       } else {
         setError(data.error?.message || 'Failed to mark document as reviewed.');
       }
-    } catch (e) {
+    } catch {
       setError('An error occurred marking document as reviewed.');
     } finally {
       setIsSubmitting(false);

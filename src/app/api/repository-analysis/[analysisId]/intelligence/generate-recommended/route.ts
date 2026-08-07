@@ -11,7 +11,6 @@ import { VersionService } from '@/lib/documentation-versions/version-service';
 import { documentationService } from '@/lib/documentation/documentation.service';
 import { ActivityService } from '@/lib/documentation-intelligence/activity-service';
 import { HealthService } from '@/lib/documentation-intelligence/health-service';
-import { DocumentationIntelligenceError } from '@/lib/documentation-intelligence/intelligence-errors';
 
 const GenerateRecommendedRequestSchema = z.object({
   documentTypes: z.array(z.string()).min(1),

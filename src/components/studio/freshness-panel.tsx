@@ -19,7 +19,7 @@ interface FreshnessPanelProps {
 export function FreshnessPanel({
   open,
   onOpenChange,
-  documentId,
+  documentId: _documentId,
   freshnessDetail,
   onRunScan,
   isScanning,

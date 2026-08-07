@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { X, Globe, AlertTriangle, Check, Loader2, Copy, ExternalLink, RefreshCw, History } from 'lucide-react';
-import { DocumentationPublishStatus } from '@/lib/documentation-site/site-types';
+import { X, Globe, AlertTriangle, Check, Loader2, Copy, ExternalLink, RefreshCw } from 'lucide-react';
 
 interface PublishModalProps {
   open: boolean;
@@ -20,11 +19,9 @@ export function PublishModal({
 }: PublishModalProps) {
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishResult, setPublishResult] = useState<any | null>(null);
-  const [publishHistory, setPublishHistory] = useState<any[]>([]);
   const [publishChanges, setPublishChanges] = useState<any | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
 
   const loadHistory = useCallback(async () => {
     if (!repositoryAnalysisId) return;
@@ -32,11 +29,10 @@ export function PublishModal({
       const res = await fetch(`/api/repository-analysis/${repositoryAnalysisId}/site/publishes`);
       const data = await res.json();
       if (data.success) {
-        setPublishHistory(data.data.history || []);
         setPublishChanges(data.data.changes || null);
       }
-    } catch (e) {
-      console.error('Failed to load publish history:', e);
+    } catch {
+      // Ignore
     }
   }, [repositoryAnalysisId]);
 
@@ -64,7 +60,7 @@ export function PublishModal({
       } else {
         setError(data.error?.message || 'Publishing failed.');
       }
-    } catch (e) {
+    } catch {
       setError('An error occurred during site deployment.');
     } finally {
       setIsPublishing(false);

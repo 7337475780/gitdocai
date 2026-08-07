@@ -1,6 +1,6 @@
 import { createHash } from 'crypto';
 import prisma from '../database/prisma';
-import { RepositoryFileManifest, SnapshotFacts } from './freshness-types';
+import { RepositoryFileManifest } from './freshness-types';
 import { FreshnessError } from './freshness-errors';
 
 export const snapshotService = {

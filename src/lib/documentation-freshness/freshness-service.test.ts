@@ -1,6 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { freshnessService } from './freshness-service';
-import { DocumentationFreshnessStatus } from './freshness-types';
 
 describe('FreshnessService', () => {
   it('defines the core service methods correctly', () => {

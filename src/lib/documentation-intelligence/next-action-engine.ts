@@ -17,15 +17,6 @@ export class NextActionEngine {
     documents: Array<{ id: string; metadata: any; qualityScore?: number | null }>
   ): DocumentationNextAction {
     const totalDocs = documents.length;
-
-    // Helper to get docId for a type
-    const findDocId = (type: string) => {
-      const match = documents.find(
-        d => ((d.metadata as any)?.type || (d.metadata as any)?.documentType || '').toUpperCase() === type.toUpperCase()
-      );
-      return match?.id;
-    };
-
     const firstDocId = documents[0]?.id;
 
     // Priority 1: No documentation exists

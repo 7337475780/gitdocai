@@ -23,6 +23,9 @@ export async function listGitHubRepositories(page = 1, perPage = 30, search?: st
         fullName: repo.full_name,
         defaultBranch: repo.default_branch,
         private: repo.private,
+        language: repo.language || null,
+        updatedAt: repo.updated_at,
+        visibility: repo.visibility || (repo.private ? 'private' : 'public'),
       }));
       
       return { repositories, page, hasNextPage };
@@ -42,6 +45,9 @@ export async function listGitHubRepositories(page = 1, perPage = 30, search?: st
         fullName: repo.full_name,
         defaultBranch: repo.default_branch,
         private: repo.private,
+        language: repo.language || null,
+        updatedAt: repo.updated_at,
+        visibility: repo.visibility || (repo.private ? 'private' : 'public'),
       }));
       
       console.log(JSON.stringify({ event: 'github_repositories_loaded', success: true }));

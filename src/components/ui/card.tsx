@@ -80,7 +80,7 @@ export function StatusBadge({ children, variant = "default", className }: Status
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors",
+        "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors whitespace-nowrap shrink-0",
         variants[variant],
         className
       )}

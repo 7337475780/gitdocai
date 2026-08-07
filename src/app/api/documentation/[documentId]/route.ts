@@ -5,6 +5,10 @@ import { SectionParser } from '@/lib/documentation/section-parser';
 import { QualityEngine } from '@/lib/documentation-quality/quality-engine';
 import { repositoryAnalysisService } from '@/lib/repository-analysis/repository-analysis.service';
 import { VersionService } from '@/lib/documentation-versions/version-service';
+import { getGitHubSession } from '@/lib/github/github-session';
+import { AuthorizationService } from '@/lib/security/authorization';
+import { ForbiddenError } from '@/lib/security/security-errors';
+import { ActivityService } from '@/lib/documentation-intelligence/activity-service';
 
 // Global map to hold debounced snapshots per document
 const snapshotTimeouts = new Map<string, NodeJS.Timeout>();
@@ -46,6 +50,12 @@ export async function GET(
 ) {
   try {
     const { documentId } = await params;
+    const session = await getGitHubSession();
+    const userLogin = session?.user?.login;
+
+    // Enforce authorization check
+    await AuthorizationService.assertDocumentAccess(documentId, userLogin);
+
     const doc = await documentationService.getDocumentById(documentId);
 
     if (!doc) {
@@ -82,7 +92,16 @@ export async function GET(
         updatedAt: doc.updatedAt,
       }
     });
-  } catch (error) {
+  } catch (error: any) {
+    if (error instanceof ForbiddenError) {
+      return NextResponse.json({
+        success: false,
+        error: {
+          code: 'FORBIDDEN',
+          message: error.message,
+        }
+      }, { status: 403 });
+    }
     console.error('GET /api/documentation/[documentId] error:', error);
     return NextResponse.json(
       { error: 'An unexpected error occurred.' },
@@ -97,6 +116,12 @@ export async function PATCH(
 ) {
   try {
     const { documentId } = await params;
+    const session = await getGitHubSession();
+    const userLogin = session?.user?.login;
+
+    // Enforce authorization check
+    await AuthorizationService.assertDocumentAccess(documentId, userLogin);
+
     const body = await request.json();
 
     if (!body || typeof body.markdown !== 'string') {
@@ -167,6 +192,19 @@ export async function PATCH(
     // Schedule debounced snapshot creation
     queueDebouncedSnapshot(documentId);
 
+    try {
+      const fileName = (newMetadata as any)?.fileName || doc.id;
+      await ActivityService.logActivity({
+        repositoryAnalysisId: doc.repositoryAnalysisId,
+        documentId: doc.id,
+        type: 'DOCUMENT_UPDATED',
+        summary: `Updated document ${fileName}`,
+        metadata: { fileName, revision: (updatedDoc as any).revision || 1 }
+      });
+    } catch (activityErr) {
+      console.error('Failed to log document update activity:', activityErr);
+    }
+
     return NextResponse.json({
       success: true,
       data: {
@@ -181,6 +219,16 @@ export async function PATCH(
     });
 
   } catch (error: any) {
+    if (error instanceof ForbiddenError) {
+      return NextResponse.json({
+        success: false,
+        error: {
+          code: 'FORBIDDEN',
+          message: error.message,
+        }
+      }, { status: 403 });
+    }
+
     if (error?.code === 'DOCUMENT_CONFLICT') {
       return NextResponse.json(
         {

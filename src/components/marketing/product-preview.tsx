@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion } from "framer-motion";
-import { FileText, LayoutDashboard, Sparkles, FolderGit2, CheckCircle2, ChevronDown } from "lucide-react";
+import { FileText, LayoutDashboard, Sparkles, FolderGit2, ChevronDown } from "lucide-react";
 import { GlassCard, MetricCard, StatusBadge } from "@/components/ui/card";
 import { GradientButton, SecondaryButton } from "@/components/ui/button";
 

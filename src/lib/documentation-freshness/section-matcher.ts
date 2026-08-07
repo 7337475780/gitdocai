@@ -64,7 +64,7 @@ export const sectionMatcher = {
         let matchReason = change.summary;
 
         // Check heading keywords for match
-        for (const [key, keywords] of Object.entries(rule.headingKeywords)) {
+        for (const keywords of Object.values(rule.headingKeywords)) {
           if (keywords.some(kw => lowerHeading.includes(kw))) {
             isMatch = true;
             break;

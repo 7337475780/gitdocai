@@ -14,6 +14,10 @@ export class AuthorizationService {
       throw new ForbiddenError('Requested repository analysis was not found or access is denied.');
     }
 
+    if (userId && analysis.repositoryOwner !== userId) {
+      throw new ForbiddenError('Requested repository analysis was not found or access is denied.');
+    }
+
     return analysis;
   }
 
@@ -30,6 +34,10 @@ export class AuthorizationService {
       throw new ForbiddenError('Requested document was not found or access is denied.');
     }
 
+    if (userId && document.repositoryAnalysis.repositoryOwner !== userId) {
+      throw new ForbiddenError('Requested document was not found or access is denied.');
+    }
+
     return document;
   }
 
@@ -39,9 +47,14 @@ export class AuthorizationService {
   static async assertDocumentationSiteAccess(siteId: string, userId?: string): Promise<any> {
     const site = await prisma.documentationSite.findUnique({
       where: { id: siteId },
+      include: { repositoryAnalysis: true },
     });
 
     if (!site) {
+      throw new ForbiddenError('Requested documentation site was not found or access is denied.');
+    }
+
+    if (userId && site.repositoryAnalysis.repositoryOwner !== userId) {
       throw new ForbiddenError('Requested documentation site was not found or access is denied.');
     }
 
@@ -54,9 +67,18 @@ export class AuthorizationService {
   static async assertPublishAccess(publishId: string, userId?: string): Promise<any> {
     const publish = await prisma.documentationSitePublish.findUnique({
       where: { id: publishId },
+      include: {
+        documentationSite: {
+          include: { repositoryAnalysis: true },
+        },
+      },
     });
 
     if (!publish) {
+      throw new ForbiddenError('Requested publish deployment was not found or access is denied.');
+    }
+
+    if (userId && publish.documentationSite.repositoryAnalysis.repositoryOwner !== userId) {
       throw new ForbiddenError('Requested publish deployment was not found or access is denied.');
     }
 

@@ -58,7 +58,7 @@ export function GenerationPanel({ onCancel }: { onCancel: () => void }) {
       }, 800); // Fake progress progression
       return () => clearInterval(interval);
     }
-  }, [state]);
+  }, [state, stages.length]);
 
   const handleGenerate = async () => {
     if (!result?.analysisId) {
@@ -266,7 +266,7 @@ export function GenerationPanel({ onCancel }: { onCancel: () => void }) {
             <GradientButton 
               onClick={handleGenerate} 
               disabled={!result?.analysisId}
-              className="w-full h-12 flex items-center justify-center gap-2 text-lg mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-12 flex items-center justify-center gap-2 text-base sm:text-lg mt-4 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
             >
               Generate Documentation
               <ChevronRight className="w-5 h-5" />

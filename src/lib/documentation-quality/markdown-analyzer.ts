@@ -49,7 +49,6 @@ export class MarkdownAnalyzer {
     }
 
     // 3. Duplicate Headings & Empty Sections
-    const headingTitles = headings.map(h => h.title.trim().toLowerCase());
     const seen = new Set<string>();
     const duplicates = new Set<string>();
     for (const h of headings) {

@@ -38,6 +38,7 @@ export function SiteFooter() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4">
+              {/* eslint-disable-next-line @next/next/no-img-element -- Local logo asset */}
               <img 
                 src="/logo.png" 
                 alt="GitDoc AI Logo" 

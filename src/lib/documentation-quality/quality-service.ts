@@ -1,6 +1,6 @@
 import { prisma } from '../database/prisma';
 import { QualityEngine } from './quality-engine';
-import { DocumentationQualityResult, DocumentationQualityIssue } from './quality-types';
+import { DocumentationQualityResult } from './quality-types';
 import { QualityError } from './quality-errors';
 import { SectionParser } from '../documentation/section-parser';
 import { ContextBuilder } from '../documentation/context-builder';
@@ -145,7 +145,7 @@ export class QualityService {
     // Validate proposed markdown
     try {
       MarkdownValidator.validate(proposedContent);
-    } catch (e) {
+    } catch {
       // If validation fails, wrapping in H2 or fallback
       if (!proposedContent.trim().startsWith('#')) {
         proposedContent = `## ${targetSectionTitle || 'Section'}\n\n` + proposedContent;
@@ -248,7 +248,7 @@ export class QualityService {
     // Validate merged markdown
     try {
       updatedMarkdown = MarkdownValidator.validate(updatedMarkdown);
-    } catch (e) {
+    } catch {
       // Keep updated as is if strict validation fails after merge, let quality flag issues
     }
 

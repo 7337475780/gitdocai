@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi, Mock } from 'vitest';
+import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
 import { AIOrchestrator } from './ai-orchestrator';
 import { AIProviderError } from './errors/ai-provider-error';
 

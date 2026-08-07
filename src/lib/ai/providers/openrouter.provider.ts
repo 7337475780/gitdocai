@@ -22,7 +22,7 @@ export class OpenRouterProvider implements AIProvider {
     sectionContent: string,
     instruction: string,
     model: string,
-    timeoutMs: number
+    _timeoutMs: number
   ): Promise<AIModelGenerationResult> {
     return {
       markdown: sectionContent + ' [Updated]',

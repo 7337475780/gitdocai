@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { X, Sparkles, Loader2, AlertTriangle, Check, ArrowRight } from 'lucide-react';
+import { X, Sparkles, Loader2, AlertTriangle } from 'lucide-react';
 
 interface SectionRegenerationModalProps {
   open: boolean;
@@ -53,7 +53,7 @@ export function SectionRegenerationModal({
       } else {
         setError(data.error?.message || 'Failed to regenerate sections.');
       }
-    } catch (e) {
+    } catch {
       setError('An unexpected error occurred during section regeneration.');
     } finally {
       setIsSubmitting(false);

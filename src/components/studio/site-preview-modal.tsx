@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { X, Globe, AlertTriangle, ExternalLink, Loader2, Search, Copy, Check } from 'lucide-react';
+import { X, Globe, AlertTriangle, Loader2, Search } from 'lucide-react';
 import { DocumentationSitePayload } from '@/lib/documentation-site/site-types';
 import { siteSearchIndex } from '@/lib/documentation-site/site-search-index';
 
@@ -22,7 +22,6 @@ export function SitePreviewModal({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   useEffect(() => {
     if (open && repositoryAnalysisId) {
@@ -40,7 +39,7 @@ export function SitePreviewModal({
             setError(data.error?.message || 'Failed to load site preview');
           }
         })
-        .catch(err => {
+        .catch(() => {
           setError('Failed to generate documentation site preview.');
         })
         .finally(() => {
@@ -51,12 +50,6 @@ export function SitePreviewModal({
 
   const activePage = siteData?.pages ? siteData.pages[activeSlug] : null;
   const searchResults = siteData ? siteSearchIndex.search(siteData.searchIndex, searchQuery) : [];
-
-  const handleCopyCode = (code: string) => {
-    navigator.clipboard.writeText(code);
-    setCopiedCode(code);
-    setTimeout(() => setCopiedCode(null), 2000);
-  };
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>

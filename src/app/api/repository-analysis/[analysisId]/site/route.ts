@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { siteGenerator } from '@/lib/documentation-site/site-generator';
-import prisma from '@/lib/database/prisma';
 import { SiteError } from '@/lib/documentation-site/site-errors';
 
 export async function GET(

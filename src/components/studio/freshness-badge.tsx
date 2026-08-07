@@ -14,7 +14,7 @@ export function FreshnessBadge({ status, impactScore, onClick, isLoading }: Fres
     return (
       <button 
         disabled
-        className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-secondary text-muted-foreground opacity-70 cursor-wait"
+        className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-secondary text-muted-foreground opacity-70 cursor-wait whitespace-nowrap shrink-0"
       >
         <span className="h-2 w-2 rounded-full bg-muted-foreground animate-pulse" />
         <span>Checking freshness...</span>
@@ -27,7 +27,7 @@ export function FreshnessBadge({ status, impactScore, onClick, isLoading }: Fres
       return (
         <button
           onClick={onClick}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors whitespace-nowrap shrink-0"
           title="No relevant repository changes detected since last review"
         >
           <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
@@ -39,7 +39,7 @@ export function FreshnessBadge({ status, impactScore, onClick, isLoading }: Fres
       return (
         <button
           onClick={onClick}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 hover:bg-cyan-500/20 transition-colors"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 hover:bg-cyan-500/20 transition-colors whitespace-nowrap shrink-0"
           title="Repository changes detected; low documentation impact"
         >
           <Clock className="h-3.5 w-3.5 text-cyan-400" />
@@ -51,7 +51,7 @@ export function FreshnessBadge({ status, impactScore, onClick, isLoading }: Fres
       return (
         <button
           onClick={onClick}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition-colors"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition-colors whitespace-nowrap shrink-0"
           title={`Repository changes may affect documentation (Score: ${impactScore ?? 0})`}
         >
           <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />
@@ -68,7 +68,7 @@ export function FreshnessBadge({ status, impactScore, onClick, isLoading }: Fres
       return (
         <button
           onClick={onClick}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 transition-colors animate-pulse"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 transition-colors animate-pulse whitespace-nowrap shrink-0"
           title="Repository changes directly conflict with documented information"
         >
           <AlertCircle className="h-3.5 w-3.5 text-rose-400" />
@@ -81,7 +81,7 @@ export function FreshnessBadge({ status, impactScore, onClick, isLoading }: Fres
       return (
         <button
           onClick={onClick}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-secondary text-muted-foreground border border-border hover:bg-secondary/80 transition-colors"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-secondary text-muted-foreground border border-border hover:bg-secondary/80 transition-colors whitespace-nowrap shrink-0"
           title="Could not evaluate freshness against repository state"
         >
           <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />

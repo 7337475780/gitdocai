@@ -107,7 +107,7 @@ export class VercelPublisher implements DocumentationPublisher {
         status,
         deploymentUrl: data.url ? `https://${data.url}` : undefined,
       };
-    } catch (e) {
+    } catch {
       return { deploymentId, status: DocumentationPublishStatus.FAILED };
     }
   }

@@ -9,7 +9,7 @@ import { GlassCard } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 export function RepositoryInputState() {
-  const { url, setUrl, status, errorType, startAnalysis } = useAnalysisStore();
+  const { url, setUrl, status, startAnalysis } = useAnalysisStore();
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   const isValidUrl = React.useMemo(() => {

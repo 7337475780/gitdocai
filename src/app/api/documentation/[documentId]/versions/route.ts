@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { VersionService } from '@/lib/documentation-versions/version-service';
 import { VERSION_ERRORS } from '@/lib/documentation-versions/version-errors';
+import { getGitHubSession } from '@/lib/github/github-session';
+import { AuthorizationService } from '@/lib/security/authorization';
+import { ForbiddenError } from '@/lib/security/security-errors';
 
 export async function GET(
   request: NextRequest,
@@ -17,6 +20,12 @@ export async function GET(
       }, { status: 400 });
     }
 
+    const session = await getGitHubSession();
+    const userLogin = session?.user?.login;
+
+    // Enforce authorization check
+    await AuthorizationService.assertDocumentAccess(documentId, userLogin);
+
     const url = new URL(request.url);
     const page = parseInt(url.searchParams.get('page') || '1', 10);
     const perPage = parseInt(url.searchParams.get('perPage') || '10', 10);
@@ -32,6 +41,15 @@ export async function GET(
       data
     });
   } catch (error: any) {
+    if (error instanceof ForbiddenError) {
+      return NextResponse.json({
+        success: false,
+        error: {
+          code: 'FORBIDDEN',
+          message: error.message,
+        }
+      }, { status: 403 });
+    }
     console.error('GET /api/documentation/[documentId]/versions error:', error);
     
     if (error.message === 'DOCUMENT_NOT_FOUND') {

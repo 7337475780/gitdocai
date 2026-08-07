@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useTheme } from "next-themes";
-import { Search, Bell, Sun, Moon, Menu } from "lucide-react";
+import { Search, Sun, Moon, Menu } from "lucide-react";
 import { IconButton } from "@/components/ui/button";
 
 export function AppHeader({
@@ -61,6 +61,7 @@ export function AppHeader({
           />
           <div className="ml-2 hidden sm:flex h-8 w-8 overflow-hidden rounded-full border border-border bg-secondary items-center justify-center text-xs font-bold text-brand-cyan">
             {user?.avatarUrl ? (
+              /* eslint-disable-next-line @next/next/no-img-element -- Dynamic GitHub user avatar requires raw img tag to avoid domain configuration lock */
               <img
                 src={user.avatarUrl}
                 alt={user.name}

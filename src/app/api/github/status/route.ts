@@ -4,12 +4,14 @@ import { getGitHubSession } from '@/lib/github/github-session';
 export async function GET() {
   try {
     const session = await getGitHubSession();
+    const configured = !!(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET);
     
     if (!session.accessToken) {
       return NextResponse.json({
         success: true,
         data: {
           connected: false,
+          configured,
           user: null,
         },
       });
@@ -36,7 +38,7 @@ export async function GET() {
           session.user = user;
           await session.save();
         }
-      } catch (e) {
+      } catch {
         // Fallback if GitHub API call fails
       }
     }
@@ -45,14 +47,17 @@ export async function GET() {
       success: true,
       data: {
         connected: true,
+        configured,
         user,
       },
     });
-  } catch (error) {
+  } catch {
+    const configured = !!(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET);
     return NextResponse.json({
       success: true,
       data: {
         connected: false,
+        configured,
         user: null,
       },
     });

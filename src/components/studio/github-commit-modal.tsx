@@ -45,7 +45,7 @@ export function GitHubCommitModal({ open, onOpenChange, documentId }: GitHubComm
       } else {
         setRepoError(data.error);
       }
-    } catch (e) {
+    } catch {
       setRepoError('Failed to load repositories');
     } finally {
       setLoadingRepos(false);
@@ -66,7 +66,7 @@ export function GitHubCommitModal({ open, onOpenChange, documentId }: GitHubComm
           setSelectedBranch(data.data.branches[0].name);
         }
       }
-    } catch (e) {
+    } catch {
       // Handle error
     } finally {
       setLoadingBranches(false);
@@ -84,7 +84,7 @@ export function GitHubCommitModal({ open, onOpenChange, documentId }: GitHubComm
       if (data.success) {
         setFileStatus(data.data.exists ? 'update' : 'create');
       }
-    } catch (e) {
+    } catch {
       setFileStatus('create');
     } finally {
       setLoadingStatus(false);
@@ -147,7 +147,7 @@ export function GitHubCommitModal({ open, onOpenChange, documentId }: GitHubComm
       } else {
         setCommitError(data.error);
       }
-    } catch (e) {
+    } catch {
       setCommitError('An unexpected error occurred while committing.');
     } finally {
       setCommitting(false);
@@ -161,11 +161,11 @@ export function GitHubCommitModal({ open, onOpenChange, documentId }: GitHubComm
         <Dialog.Content className="fixed left-[50%] top-[50%] z-50 w-full max-w-md translate-x-[-50%] translate-y-[-50%] border border-border bg-card p-6 shadow-2xl rounded-2xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]">
           
           <div className="flex items-center justify-between mb-4">
-            <Dialog.Title className="text-lg font-semibold tracking-tight text-white flex items-center gap-2">
+            <Dialog.Title className="text-lg font-semibold tracking-tight text-foreground flex items-center gap-2">
               <GithubIcon className="w-5 h-5" />
               Commit README to GitHub
             </Dialog.Title>
-            <Dialog.Close className="rounded-full p-1.5 opacity-70 transition-opacity hover:opacity-100 hover:bg-white/10 outline-none">
+            <Dialog.Close className="rounded-full p-1.5 opacity-70 transition-opacity hover:opacity-100 hover:bg-secondary outline-none">
               <X className="h-4 w-4" />
               <span className="sr-only">Close</span>
             </Dialog.Close>
@@ -182,7 +182,7 @@ export function GitHubCommitModal({ open, onOpenChange, documentId }: GitHubComm
                   <CheckCircle2 className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-white mb-1">README committed successfully</h3>
+                  <h3 className="font-semibold text-foreground mb-1">README committed successfully</h3>
                   <p className="text-sm text-muted-foreground">Your changes are now live on GitHub.</p>
                 </div>
               </div>
@@ -192,7 +192,7 @@ export function GitHubCommitModal({ open, onOpenChange, documentId }: GitHubComm
                   href={commitSuccess.commitUrl} 
                   target="_blank" 
                   rel="noreferrer"
-                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-white/10 hover:bg-white/15 text-white font-medium rounded-lg transition-colors text-sm"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-primary text-primary-foreground font-medium rounded-lg transition-colors text-sm"
                 >
                   <GitCommitHorizontal className="w-4 h-4" />
                   View Commit
@@ -202,15 +202,16 @@ export function GitHubCommitModal({ open, onOpenChange, documentId }: GitHubComm
                   href={commitSuccess.fileUrl} 
                   target="_blank" 
                   rel="noreferrer"
-                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-transparent border border-border hover:bg-white/5 text-white font-medium rounded-lg transition-colors text-sm"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-secondary hover:bg-secondary/80 text-foreground font-medium border border-border rounded-lg transition-colors text-sm"
                 >
                   <GithubIcon className="w-4 h-4" />
                   View Repository
                   <ExternalLink className="w-3 h-3 ml-1 opacity-50" />
                 </a>
                 <button
+                  type="button"
                   onClick={() => onOpenChange(false)}
-                  className="w-full mt-2 py-2 text-sm text-muted-foreground hover:text-white transition-colors"
+                  className="w-full mt-2 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Done
                 </button>
@@ -225,7 +226,7 @@ export function GitHubCommitModal({ open, onOpenChange, documentId }: GitHubComm
                     value={selectedRepo}
                     onChange={(e) => setSelectedRepo(e.target.value)}
                     disabled={loadingRepos || repositories.length === 0}
-                    className="w-full bg-background/50 border border-border rounded-lg px-3 py-2 text-sm text-white appearance-none focus:outline-none focus:ring-2 focus:ring-brand-cyan/50 disabled:opacity-50"
+                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-brand-cyan/50 disabled:opacity-50"
                   >
                     {loadingRepos ? (
                       <option>Loading repositories...</option>
@@ -233,7 +234,7 @@ export function GitHubCommitModal({ open, onOpenChange, documentId }: GitHubComm
                       <option>No repositories found</option>
                     ) : (
                       repositories.map(repo => (
-                        <option key={repo.fullName} value={repo.fullName}>
+                        <option key={repo.fullName} value={repo.fullName} className="bg-card text-card-foreground">
                           {repo.fullName} {repo.private ? '(Private)' : ''}
                         </option>
                       ))
@@ -249,7 +250,7 @@ export function GitHubCommitModal({ open, onOpenChange, documentId }: GitHubComm
                   value={selectedBranch}
                   onChange={(e) => setSelectedBranch(e.target.value)}
                   disabled={loadingBranches || branches.length === 0}
-                  className="w-full bg-background/50 border border-border rounded-lg px-3 py-2 text-sm text-white appearance-none focus:outline-none focus:ring-2 focus:ring-brand-cyan/50 disabled:opacity-50"
+                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-brand-cyan/50 disabled:opacity-50"
                 >
                   {loadingBranches ? (
                     <option>Loading branches...</option>
@@ -257,7 +258,7 @@ export function GitHubCommitModal({ open, onOpenChange, documentId }: GitHubComm
                     <option>No branches available</option>
                   ) : (
                     branches.map(branch => (
-                      <option key={branch.name} value={branch.name}>{branch.name}</option>
+                      <option key={branch.name} value={branch.name} className="bg-card text-card-foreground">{branch.name}</option>
                     ))
                   )}
                 </select>
@@ -270,7 +271,7 @@ export function GitHubCommitModal({ open, onOpenChange, documentId }: GitHubComm
                   value={filePath}
                   onChange={(e) => setFilePath(e.target.value)}
                   placeholder="README.md"
-                  className="w-full bg-background/50 border border-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan/50 placeholder:text-muted-foreground/50"
+                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand-cyan/50 placeholder:text-muted-foreground/50"
                 />
               </div>
 
@@ -280,12 +281,12 @@ export function GitHubCommitModal({ open, onOpenChange, documentId }: GitHubComm
                   type="text" 
                   value={commitMessage}
                   onChange={(e) => setCommitMessage(e.target.value)}
-                  className="w-full bg-background/50 border border-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan/50"
+                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand-cyan/50"
                 />
               </div>
 
               <div className="pt-2">
-                <div className="flex items-center gap-2 p-3 bg-white/5 border border-white/5 rounded-lg">
+                <div className="flex items-center gap-2 p-3 bg-secondary/50 border border-border rounded-lg">
                   {loadingStatus ? (
                     <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
                   ) : (
@@ -295,9 +296,9 @@ export function GitHubCommitModal({ open, onOpenChange, documentId }: GitHubComm
                     {loadingStatus ? (
                       <span className="text-muted-foreground">Checking status...</span>
                     ) : fileStatus === 'update' ? (
-                      <span className="text-white font-medium">Update <span className="text-brand-cyan">{filePath}</span></span>
+                      <span className="text-foreground font-medium">Update <span className="text-brand-cyan">{filePath}</span></span>
                     ) : fileStatus === 'create' ? (
-                      <span className="text-white font-medium">Create <span className="text-brand-cyan">{filePath}</span></span>
+                      <span className="text-foreground font-medium">Create <span className="text-brand-cyan">{filePath}</span></span>
                     ) : (
                       <span className="text-muted-foreground">Waiting for valid path...</span>
                     )}
@@ -314,19 +315,30 @@ export function GitHubCommitModal({ open, onOpenChange, documentId }: GitHubComm
 
               <div className="flex gap-3 pt-4">
                 <button
+                  type="button"
                   onClick={() => onOpenChange(false)}
                   disabled={committing}
-                  className="flex-1 px-4 py-2 bg-transparent border border-border hover:bg-white/5 text-white font-medium rounded-lg transition-colors text-sm disabled:opacity-50"
+                  className="flex-1 px-4 py-2 bg-transparent border border-border hover:bg-secondary text-foreground font-medium rounded-lg transition-colors text-sm disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
+                  type="button"
                   onClick={handleCommit}
-                  disabled={committing || loadingStatus || !fileStatus || !commitMessage}
-                  className="flex-1 px-4 py-2 bg-white text-black hover:bg-white/90 font-medium rounded-lg transition-colors text-sm disabled:opacity-50 flex items-center justify-center gap-2"
+                  disabled={committing || !selectedRepo || !selectedBranch || !filePath.trim() || !commitMessage.trim()}
+                  className="flex-1 px-4 py-2 bg-primary text-primary-foreground font-medium rounded-lg transition-colors text-sm flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  {committing ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                  Commit README
+                  {committing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Committing...
+                    </>
+                  ) : (
+                    <>
+                      <GitCommitHorizontal className="w-4 h-4" />
+                      Commit
+                    </>
+                  )}
                 </button>
               </div>
             </div>

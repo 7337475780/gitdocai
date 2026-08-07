@@ -7,9 +7,26 @@ import { AnalysisProgressState } from "@/components/analyze/analysis-progress-st
 import { AnalysisSuccessState } from "@/components/analyze/analysis-success-state";
 import { AnalysisErrorState } from "@/components/analyze/analysis-error-state";
 import { AnimatePresence, motion } from "framer-motion";
+import { useSearchParams } from "next/navigation";
 
 export function AnalyzeExperience() {
-  const { status } = useAnalysisStore();
+  const { status, setUrl, reset } = useAnalysisStore();
+  const searchParams = useSearchParams();
+  const urlParam = searchParams.get("url");
+
+  React.useEffect(() => {
+    if (urlParam) {
+      const currentUrlInStore = useAnalysisStore.getState().url;
+      if (currentUrlInStore !== urlParam) {
+        reset();
+        setUrl(urlParam);
+        const timer = setTimeout(() => {
+          useAnalysisStore.getState().startAnalysis();
+        }, 50);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [urlParam, setUrl, reset]);
 
   return (
     <div className="flex-1 flex flex-col w-full h-full relative overflow-hidden bg-background">

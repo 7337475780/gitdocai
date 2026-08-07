@@ -1,16 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useDialog } from '@/components/ui/dialog-provider';
-import { Download, Copy, RefreshCw, CheckCircle2, Loader2, CircleAlert, GitCommitHorizontal, ExternalLink, History, LayoutDashboard } from 'lucide-react';
+import { Download, Copy, RefreshCw, CheckCircle2, Loader2, CircleAlert, History, LayoutDashboard } from 'lucide-react';
 import { GradientButton } from '@/components/ui/button';
-import { DocumentSection } from '@/lib/documentation/section-parser';
 import { DocumentationQualityResult } from '@/lib/documentation-quality/quality-types';
 import { QualityPanel } from './quality-panel';
 import { GitHubCommitModal } from './github-commit-modal';
 import * as Popover from '@radix-ui/react-popover';
 import { GithubIcon } from '@/components/ui/icons';
 import * as Dialog from '@radix-ui/react-dialog';
-import { X, AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 
 import { DocumentationFreshnessStatus } from '@/lib/documentation-freshness/freshness-types';
 import { FreshnessBadge } from './freshness-badge';
@@ -74,7 +73,7 @@ export function StudioToolbar({
       const res = await fetch('/api/github/status');
       const data = await res.json();
       setGithubConnected(data.data.connected);
-    } catch (e) {
+    } catch {
       setGithubConnected(false);
     } finally {
       setCheckingGithub(false);
@@ -95,7 +94,7 @@ export function StudioToolbar({
     try {
       await fetch('/api/github/disconnect', { method: 'POST' });
       setGithubConnected(false);
-    } catch (e) {
+    } catch {
       // Ignore
     } finally {
       setDisconnecting(false);
@@ -124,7 +123,7 @@ export function StudioToolbar({
   };
 
   return (
-    <div className="flex h-14 items-center justify-between border-b border-border bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div className="flex min-h-[3.5rem] py-2 md:py-0 flex-wrap md:flex-nowrap gap-x-4 gap-y-3 items-center justify-between border-b border-border bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       
       {/* Left */}
       <div className="flex items-center gap-4">
@@ -197,7 +196,7 @@ export function StudioToolbar({
           <>
             <button
               onClick={handleOpenCommitModal}
-              className="hidden lg:flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-background bg-foreground hover:bg-foreground/90 rounded-md transition-colors"
+              className="hidden lg:flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-background bg-foreground hover:bg-foreground/90 rounded-md transition-colors whitespace-nowrap shrink-0"
             >
               <GithubIcon className="h-4 w-4" />
               Commit to GitHub
@@ -233,7 +232,7 @@ export function StudioToolbar({
         <button 
           onClick={onRegenerate} 
           disabled={isRegenerating}
-          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-foreground bg-secondary hover:bg-secondary/80 rounded-md transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-foreground bg-secondary hover:bg-secondary/80 rounded-md transition-colors disabled:opacity-50 whitespace-nowrap shrink-0"
         >
           {isRegenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
           <span className="hidden sm:inline">{isRegenerating ? 'Regenerating...' : 'Regenerate'}</span>
@@ -241,7 +240,7 @@ export function StudioToolbar({
 
         <button 
           onClick={onToggleHistory} 
-          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition-colors"
+          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition-colors whitespace-nowrap shrink-0"
           title="Version History"
         >
           <History className="h-4 w-4" />
@@ -258,14 +257,14 @@ export function StudioToolbar({
 
         <button 
           onClick={onCopy} 
-          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition-colors"
+          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition-colors whitespace-nowrap shrink-0"
           title="Copy Markdown"
         >
           <Copy className="h-4 w-4" />
           <span className="sr-only">Copy</span>
         </button>
 
-        <GradientButton onClick={onDownload} className="h-8 px-3 py-1 text-sm gap-2">
+        <GradientButton onClick={onDownload} className="h-8 px-3 py-1 text-sm gap-2 whitespace-nowrap shrink-0">
           <Download className="h-4 w-4" />
           <span className="hidden sm:inline">Download</span>
         </GradientButton>

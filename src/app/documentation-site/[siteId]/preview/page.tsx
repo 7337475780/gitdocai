@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { Globe, AlertTriangle, Loader2, Search, FileText, ChevronRight } from 'lucide-react';
+import { Globe, AlertTriangle, Loader2, Search } from 'lucide-react';
 import { DocumentationSitePayload } from '@/lib/documentation-site/site-types';
 import { siteSearchIndex } from '@/lib/documentation-site/site-search-index';
 
@@ -30,7 +30,7 @@ export default function PrivateSitePreviewPage({ params }: { params: Promise<{ s
           setError(data.error?.message || 'Failed to load preview data.');
         }
       })
-      .catch(err => {
+      .catch(() => {
         setError('Failed to load documentation site preview.');
       })
       .finally(() => {

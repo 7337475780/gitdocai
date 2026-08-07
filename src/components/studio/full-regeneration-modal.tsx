@@ -41,7 +41,7 @@ export function FullRegenerationModal({
       } else {
         setError(data.error?.message || 'Failed to generate document preview.');
       }
-    } catch (e) {
+    } catch {
       setError('An unexpected error occurred generating preview.');
     } finally {
       setIsPreviewLoading(false);
@@ -73,7 +73,7 @@ export function FullRegenerationModal({
       } else {
         setError(data.error?.message || 'Failed to apply new document version.');
       }
-    } catch (e) {
+    } catch {
       setError('An error occurred while applying new version.');
     } finally {
       setIsApplying(false);

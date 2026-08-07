@@ -28,7 +28,7 @@ interface VersionCompareModalProps {
 }
 
 export function VersionCompareModal({
-  documentId,
+  documentId: _documentId,
   baseVersionId,
   baseVersionNumber,
   compareVersionId,
@@ -58,7 +58,7 @@ export function VersionCompareModal({
       } else {
         setErrorMsg(data.error?.message || 'Failed to compare versions.');
       }
-    } catch (e) {
+    } catch {
       setErrorMsg('Failed to fetch comparison details.');
     } finally {
       setLoading(false);

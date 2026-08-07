@@ -8,7 +8,7 @@ export async function GET() {
       { status: 'ready', timestamp: new Date().toISOString() },
       { status: 200 }
     );
-  } catch (e) {
+  } catch {
     return NextResponse.json(
       { status: 'not_ready', message: 'Database connection failed' },
       { status: 503 }

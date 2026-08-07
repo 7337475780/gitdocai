@@ -27,9 +27,8 @@ export default function DocumentStudioPage({ params }: { params: Promise<{ docum
   const [doc, setDoc] = useState<any | null>(null);
   const [markdown, setMarkdown] = useState('');
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
-  const [isRegenerating, setIsRegenerating] = useState(false);
+  const [isRegenerating] = useState(false);
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [mobileTab, setMobileTab] = useState<'editor' | 'preview'>('editor');
   const [quality, setQuality] = useState<DocumentationQualityResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,8 +44,9 @@ export default function DocumentStudioPage({ params }: { params: Promise<{ docum
   const [sectionRegenModalOpen, setSectionRegenModalOpen] = useState(false);
   const [fullRegenModalOpen, setFullRegenModalOpen] = useState(false);
   const [markReviewedModalOpen, setMarkReviewedModalOpen] = useState(false);
+  const [_isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [_highlightedSectionHeadings, setHighlightedSectionHeadings] = useState<string[]>([]);
   const [isScanningFreshness, setIsScanningFreshness] = useState(false);
-  const [highlightedSectionHeadings, setHighlightedSectionHeadings] = useState<string[]>([]);
 
   // Phase 12 Export & Publishing States
   const [sitePreviewModalOpen, setSitePreviewModalOpen] = useState(false);
@@ -61,8 +61,8 @@ export default function DocumentStudioPage({ params }: { params: Promise<{ docum
       if (data.success) {
         setFreshnessDetail(data.data);
       }
-    } catch (e) {
-      console.error('Failed to load freshness detail:', e);
+    } catch {
+      console.error('Failed to load freshness detail');
     }
   }, [documentId]);
 
@@ -149,7 +149,7 @@ export default function DocumentStudioPage({ params }: { params: Promise<{ docum
         } else {
           setSaveStatus('error');
         }
-      } catch (e) {
+      } catch {
         setSaveStatus('error');
       }
     }, 2000);
@@ -193,7 +193,7 @@ export default function DocumentStudioPage({ params }: { params: Promise<{ docum
       } else {
         setSaveStatus('error');
       }
-    } catch (e) {
+    } catch {
       setSaveStatus('error');
     }
   };
@@ -219,7 +219,7 @@ export default function DocumentStudioPage({ params }: { params: Promise<{ docum
       }
       setSaveStatus('error');
       return false;
-    } catch (e) {
+    } catch {
       setSaveStatus('error');
       return false;
     }
@@ -261,7 +261,7 @@ export default function DocumentStudioPage({ params }: { params: Promise<{ docum
           variant: "destructive"
         });
       }
-    } catch (e) {
+    } catch {
       await dialog.alert({
         title: "Restore Failed",
         description: "An unexpected error occurred while restoring the version.",
@@ -338,15 +338,17 @@ export default function DocumentStudioPage({ params }: { params: Promise<{ docum
         </div>
 
         {/* Mobile Tabs */}
-        <div className="lg:hidden absolute bottom-4 left-1/2 -translate-x-1/2 flex bg-background/80 backdrop-blur border border-border p-1 rounded-full z-10">
+        <div className="lg:hidden absolute bottom-4 left-1/2 -translate-x-1/2 flex bg-background/90 backdrop-blur-md border border-border p-1 rounded-full z-10 shadow-lg">
           <button 
-            className={`px-4 py-1 text-sm rounded-full ${mobileTab === 'editor' ? 'bg-white/10 text-white' : 'text-muted-foreground'}`}
+            type="button"
+            className={`px-4 py-1.5 text-xs font-medium rounded-full transition-colors ${mobileTab === 'editor' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
             onClick={() => setMobileTab('editor')}
           >
             Editor
           </button>
           <button 
-            className={`px-4 py-1 text-sm rounded-full ${mobileTab === 'preview' ? 'bg-white/10 text-white' : 'text-muted-foreground'}`}
+            type="button"
+            className={`px-4 py-1.5 text-xs font-medium rounded-full transition-colors ${mobileTab === 'preview' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
             onClick={() => setMobileTab('preview')}
           >
             Preview
@@ -355,7 +357,9 @@ export default function DocumentStudioPage({ params }: { params: Promise<{ docum
 
         {/* Mobile Drawer Toggle */}
         <button 
-          className="lg:hidden absolute top-16 left-4 z-10 p-2 bg-background/80 backdrop-blur border border-border rounded-md text-foreground"
+          type="button"
+          aria-label="Toggle sections menu"
+          className="lg:hidden absolute top-16 left-4 z-10 p-2 bg-background/90 backdrop-blur-md border border-border rounded-lg text-foreground shadow-sm hover:bg-secondary transition-colors"
           onClick={() => setIsDrawerOpen(true)}
         >
           <Menu className="h-5 w-5" />

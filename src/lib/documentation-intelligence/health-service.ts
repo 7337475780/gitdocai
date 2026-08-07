@@ -276,7 +276,7 @@ export class HealthService {
       return a.importanceRank - b.importanceRank;
     });
 
-    return items.map(({ priorityRank, importanceRank, ...rest }) => rest);
+    return items.map(({ priorityRank: _p, importanceRank: _i, ...rest }) => rest);
   }
 
   /**

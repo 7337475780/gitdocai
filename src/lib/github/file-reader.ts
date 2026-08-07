@@ -1,5 +1,3 @@
-import { GitHubClient } from './github-client';
-
 export class FileReader {
   
   static async getFileContent(owner: string, repo: string, path: string, branch: string = 'main'): Promise<string | null> {
@@ -24,7 +22,7 @@ export class FileReader {
       const text = await response.text();
       return text;
       
-    } catch (e) {
+    } catch {
       return null;
     }
   }

@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ChevronRight, CheckCircle2, Code2, FileJson, FileText } from "lucide-react";
+import { ChevronRight, CheckCircle2, Code2, FileText } from "lucide-react";
 import { GradientButton, SecondaryButton } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/card";
 

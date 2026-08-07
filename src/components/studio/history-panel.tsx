@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { 
   X, 
@@ -9,8 +9,7 @@ import {
   Diff, 
   AlertTriangle,
   Award,
-  ChevronRight,
-  Sparkles
+  ChevronRight
 } from 'lucide-react';
 import { VersionSummary, VersionDetail } from '@/lib/documentation-versions/version-types';
 
@@ -50,7 +49,7 @@ export function HistoryPanel({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Fetch version history list
-  const fetchHistory = async (pageNum: number, append = false) => {
+  const fetchHistory = useCallback(async (pageNum: number, append = false) => {
     setLoading(true);
     setErrorMsg(null);
     try {
@@ -63,12 +62,12 @@ export function HistoryPanel({
       } else {
         setErrorMsg(data.error?.message || 'Failed to load version history.');
       }
-    } catch (e) {
+    } catch {
       setErrorMsg('Failed to load version history.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [documentId]);
 
   // Fetch full details for preview
   const fetchVersionDetail = async (versionId: string) => {
@@ -82,7 +81,7 @@ export function HistoryPanel({
       } else {
         setErrorMsg(data.error?.message || 'Failed to load version details.');
       }
-    } catch (e) {
+    } catch {
       setErrorMsg('Failed to load version details.');
     } finally {
       setLoadingDetail(false);
@@ -96,7 +95,7 @@ export function HistoryPanel({
       setSelectedVersion(null);
       setErrorMsg(null);
     }
-  }, [open, documentId]);
+  }, [open, documentId, fetchHistory]);
 
   const handleSelectVersion = (versionId: string) => {
     setSelectedVersionId(versionId);
@@ -130,7 +129,7 @@ export function HistoryPanel({
       } else {
         setErrorMsg(data.error?.message || 'Failed to restore version.');
       }
-    } catch (e) {
+    } catch {
       setErrorMsg('Failed to execute restore.');
     } finally {
       setRestoring(false);
@@ -151,7 +150,7 @@ export function HistoryPanel({
       if (diffHours < 24) return `${diffHours}h ago`;
       if (diffDays === 1) return 'Yesterday';
       return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-    } catch (e) {
+    } catch {
       return '';
     }
   };

@@ -4,8 +4,8 @@ import { DocumentationPublishStatus, DocumentationSiteStatus } from '../document
 import { PublishingError } from './publisher-errors';
 import { siteGenerator } from '../documentation-site/site-generator';
 import { publisherRegistry } from './publisher-registry';
-import { QualityService } from '../documentation-quality/quality-service';
 import { freshnessService } from '../documentation-freshness/freshness-service';
+import { ActivityService } from '../documentation-intelligence/activity-service';
 
 export const publishingService = {
   async publishSite(repositoryAnalysisId: string) {
@@ -85,6 +85,27 @@ export const publishingService = {
           slug: result.deploymentUrl,
         },
       });
+
+      // 8. Log activity
+      const totalPublishes = await prisma.documentationSitePublish.count({
+        where: {
+          documentationSiteId: payload.siteId,
+          status: 'PUBLISHED',
+        },
+      });
+      const activityType = totalPublishes > 1 ? 'SITE_REPUBLISHED' : 'SITE_PUBLISHED';
+      try {
+        await ActivityService.logActivity({
+          repositoryAnalysisId,
+          type: activityType,
+          summary: activityType === 'SITE_PUBLISHED'
+            ? `Published documentation site to ${result.deploymentUrl}`
+            : `Republished documentation site to ${result.deploymentUrl}`,
+          metadata: { deploymentUrl: result.deploymentUrl, publishId: updatedPublishRecord.id },
+        });
+      } catch (activityErr) {
+        console.error('Failed to log site publish activity:', activityErr);
+      }
 
       return {
         publishId: updatedPublishRecord.id,

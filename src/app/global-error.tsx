@@ -3,7 +3,7 @@
 import React from 'react';
 
 export default function GlobalErrorBoundary({
-  error,
+  error: _error,
   reset,
 }: {
   error: Error & { digest?: string };
