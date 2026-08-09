@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import * as Popover from '@radix-ui/react-popover';
-import { Download, FileText, Archive, Globe, ChevronDown, Loader2 } from 'lucide-react';
+import { Download, FileText, Archive, Globe, ChevronDown, Loader2, Copy } from 'lucide-react';
 
 interface ExportMenuProps {
   documentId: string;
@@ -8,6 +8,8 @@ interface ExportMenuProps {
   repositoryAnalysisId?: string;
   onOpenSitePreview: () => void;
   onOpenPublishModal: () => void;
+  onCopy: () => void;
+  onDownload: () => void;
 }
 
 export function ExportMenu({
@@ -16,13 +18,15 @@ export function ExportMenu({
   repositoryAnalysisId,
   onOpenSitePreview,
   onOpenPublishModal,
+  onCopy,
+  onDownload,
 }: ExportMenuProps) {
   const [open, setOpen] = useState(false);
   const [isExportingZip, setIsExportingZip] = useState(false);
 
   const handleDownloadActiveDoc = () => {
     setOpen(false);
-    window.location.href = `/api/documentation/${documentId}/export`;
+    onDownload();
   };
 
   const handleDownloadAllZip = async () => {
@@ -83,6 +87,20 @@ export function ExportMenu({
               <div>
                 <span className="block font-medium">Download {documentType}.md</span>
                 <span className="text-[10px] text-muted-foreground">Markdown file attachment</span>
+              </div>
+            </button>
+
+            <button
+              onClick={() => {
+                setOpen(false);
+                onCopy();
+              }}
+              className="flex items-center gap-2.5 w-full text-left px-3 py-2 text-xs font-medium rounded-lg text-foreground hover:bg-secondary transition-colors"
+            >
+              <Copy className="h-4 w-4 text-brand-cyan" />
+              <div>
+                <span className="block font-medium">Copy Markdown</span>
+                <span className="text-[10px] text-muted-foreground">Copy document body to clipboard</span>
               </div>
             </button>
 

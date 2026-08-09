@@ -237,7 +237,7 @@ export function DashboardView() {
           description={error}
           action={
             <SecondaryButton onClick={fetchDashboard}>
-              <RefreshCw className="h-4 w-4 mr-2" /> Retry
+              <RefreshCw className="h-4 w-4" /> Retry
             </SecondaryButton>
           }
         />
@@ -601,7 +601,8 @@ function WelcomeSection({
           }}
           className="text-sm px-4 py-2 h-auto whitespace-nowrap"
         >
-          <FileText className="h-4 w-4 mr-1.5" /> View Documentation
+          <FileText className="h-4 w-4" />
+          <span>View Documentation</span>
         </SecondaryButton>
       </div>
     </div>

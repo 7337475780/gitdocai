@@ -1,17 +1,19 @@
 "use client";
 
 import * as React from "react";
+import { usePathname } from "next/navigation";
 import { AppSidebar } from "./app-sidebar";
 import { AppHeader } from "./app-header";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const pathname = usePathname();
 
-  // Close mobile menu on route change (simplified for now)
+  // Close mobile menu on route change
   React.useEffect(() => {
     setIsMobileMenuOpen(false);
-  }, []);
+  }, [pathname]);
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -30,6 +32,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               exit={{ opacity: 0 }}
               className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden"
               onClick={() => setIsMobileMenuOpen(false)}
+              aria-label="Close navigation menu"
             />
             <motion.div
               initial={{ x: "-100%" }}
@@ -37,6 +40,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
               className="fixed inset-y-0 left-0 z-50 w-64 md:hidden"
+              role="dialog"
+              aria-label="Navigation menu"
             >
               <AppSidebar />
             </motion.div>

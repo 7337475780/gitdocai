@@ -19,7 +19,170 @@ import {
   AlertCircle,
   ListFilter,
   Trash2,
+  ChevronDown,
+  Calendar,
 } from "lucide-react";
+import { Button, GradientButton } from "@/components/ui/button";
+import * as Popover from "@radix-ui/react-popover";
+import { cn } from "@/lib/utils";
+import { CustomSelect } from "@/components/ui/custom-select";
+
+interface CustomDatePickerProps {
+  value: string; // YYYY-MM-DD
+  onChange: (value: string) => void;
+  label: string;
+}
+
+export function CustomDatePicker({ value, onChange, label }: CustomDatePickerProps) {
+  const [open, setOpen] = React.useState(false);
+  const [currentDate, setCurrentDate] = React.useState(() => value ? new Date(value) : new Date());
+  const [viewMode, setViewMode] = React.useState<"days" | "months" | "years">("days");
+
+  React.useEffect(() => {
+    if (!open) {
+      setViewMode("days");
+    }
+  }, [open]);
+
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+
+  const handlePrevMonth = () => {
+    setCurrentDate(new Date(year, month - 1, 1));
+  };
+  const handleNextMonth = () => {
+    setCurrentDate(new Date(year, month + 1, 1));
+  };
+
+  const totalDays = new Date(year, month + 1, 0).getDate();
+  const firstDayIndex = new Date(year, month, 1).getDay();
+  const days = Array.from({ length: totalDays }, (_, i) => i + 1);
+  const blanks = Array.from({ length: firstDayIndex }, () => null);
+
+  const monthsList = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+
+  const handleSelectDay = (day: number) => {
+    const d = new Date(year, month, day);
+    const offset = d.getTimezoneOffset();
+    const formatted = new Date(d.getTime() - (offset * 60 * 1000)).toISOString().split('T')[0];
+    onChange(formatted);
+    setOpen(false);
+  };
+
+  const formattedDisplay = value ? new Date(value).toLocaleDateString() : "Select Date";
+
+  return (
+    <Popover.Root open={open} onOpenChange={setOpen}>
+      <Popover.Trigger asChild>
+        <button className="flex h-10 w-full items-center justify-between rounded-md border border-border bg-background/50 px-3 py-2 text-sm text-foreground focus-ring text-left transition-all hover:bg-secondary/30">
+          <div className="flex items-center gap-2 truncate">
+            <span className="text-xs text-muted-foreground font-semibold shrink-0">{label}</span>
+            <span className={cn("truncate text-sm", value ? "text-foreground" : "text-muted-foreground/50")}>{formattedDisplay}</span>
+          </div>
+          <Calendar className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
+        </button>
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content className="z-50 w-72 rounded-xl border border-border bg-card p-4 text-card-foreground shadow-xl animate-in fade-in-0 zoom-in-95" align="start" sideOffset={4}>
+          <div className="flex items-center justify-between mb-4">
+            <button onClick={handlePrevMonth} className="p-1 hover:bg-secondary rounded-lg transition-colors text-sm font-semibold">&larr;</button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setViewMode(viewMode === "months" ? "days" : "months")}
+                className="hover:bg-secondary px-2 py-1 rounded text-xs font-semibold text-foreground transition-all"
+              >
+                {monthsList[month]}
+              </button>
+              <button
+                onClick={() => setViewMode(viewMode === "years" ? "days" : "years")}
+                className="hover:bg-secondary px-2 py-1 rounded text-xs font-semibold text-foreground transition-all"
+              >
+                {year}
+              </button>
+            </div>
+            <button onClick={handleNextMonth} className="p-1 hover:bg-secondary rounded-lg transition-colors text-sm font-semibold">&rarr;</button>
+          </div>
+
+          {viewMode === "days" && (
+            <>
+              <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-muted-foreground mb-2">
+                <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+              </div>
+              <div className="grid grid-cols-7 gap-1 text-center text-xs">
+                {blanks.map((_, i) => <div key={`b-${i}`} />)}
+                {days.map((day) => {
+                  const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+                  const isSelected = dateStr === value;
+                  return (
+                    <button
+                      key={day}
+                      onClick={() => handleSelectDay(day)}
+                      className={cn(
+                        "h-8 w-8 rounded-lg flex items-center justify-center transition-colors text-xs",
+                        isSelected 
+                          ? "bg-brand-cyan text-black font-bold" 
+                          : "hover:bg-secondary text-foreground"
+                      )}
+                    >
+                      {day}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          {viewMode === "months" && (
+            <div className="grid grid-cols-3 gap-2">
+              {monthsList.map((m, idx) => (
+                <button
+                  key={m}
+                  onClick={() => {
+                    setCurrentDate(new Date(year, idx, 1));
+                    setViewMode("days");
+                  }}
+                  className={cn(
+                    "py-2 rounded-lg text-xs font-medium transition-colors text-center",
+                    idx === month 
+                      ? "bg-brand-cyan text-black font-semibold" 
+                      : "hover:bg-secondary text-foreground"
+                  )}
+                >
+                  {m.substring(0, 3)}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {viewMode === "years" && (
+            <div className="grid grid-cols-4 gap-2 max-h-48 overflow-y-auto custom-scrollbar">
+              {Array.from({ length: 24 }, (_, idx) => new Date().getFullYear() - 12 + idx).map((y) => (
+                <button
+                  key={y}
+                  onClick={() => {
+                    setCurrentDate(new Date(y, month, 1));
+                    setViewMode("days");
+                  }}
+                  className={cn(
+                    "py-2 rounded-lg text-xs font-medium transition-colors text-center",
+                    y === year 
+                      ? "bg-brand-cyan text-black font-semibold" 
+                      : "hover:bg-secondary text-foreground"
+                  )}
+                >
+                  {y}
+                </button>
+              ))}
+            </div>
+          )}
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
+  );
+}
 
 interface Activity {
   id: string;
@@ -266,7 +429,7 @@ export function HistoryView() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {/* Search Box */}
           <div className="relative">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <input
               type="text"
               placeholder="Search repository, document..."
@@ -277,104 +440,81 @@ export function HistoryView() {
           </div>
 
           {/* Event Type Filter */}
-          <select
-            className="h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm text-foreground focus-ring"
+          <CustomSelect
             value={selectedType}
-            onChange={(e) => {
-              setSelectedType(e.target.value);
+            onChange={(val) => {
+              setSelectedType(val);
               setCurrentPage(1);
             }}
-          >
-            {EVENT_TYPES.map((type) => (
-              <option key={type.value} value={type.value}>
-                {type.label}
-              </option>
-            ))}
-          </select>
+            options={EVENT_TYPES}
+            placeholder="All Events"
+          />
 
           {/* Repository Filter */}
-          <select
-            className="h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm text-foreground focus-ring"
+          <CustomSelect
             value={selectedRepo}
-            onChange={(e) => {
-              setSelectedRepo(e.target.value);
+            onChange={(val) => {
+              setSelectedRepo(val);
               setCurrentPage(1);
             }}
-          >
-            <option value="">All Repositories</option>
-            {repositories.map((repo) => (
-              <option key={repo.id} value={repo.id}>
-                {repo.name}
-              </option>
-            ))}
-          </select>
+            options={[{ value: "", label: "All Repositories" }, ...repositories.map(r => ({ value: r.id, label: r.name }))]}
+            placeholder="All Repositories"
+          />
 
           {/* Document Filter */}
-          <select
-            className="h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm text-foreground focus-ring"
+          <CustomSelect
             value={selectedDoc}
-            onChange={(e) => {
-              setSelectedDoc(e.target.value);
+            onChange={(val) => {
+              setSelectedDoc(val);
               setCurrentPage(1);
             }}
-          >
-            <option value="">All Documents</option>
-            {documents.map((doc) => (
-              <option key={doc.id} value={doc.id}>
-                {doc.title}
-              </option>
-            ))}
-          </select>
+            options={[{ value: "", label: "All Documents" }, ...documents.map(d => ({ value: d.id, label: d.title }))]}
+            placeholder="All Documents"
+          />
 
           {/* Start Date */}
-          <div className="relative">
-            <span className="absolute right-3 top-2.5 text-xs text-muted-foreground pointer-events-none">Start</span>
-            <input
-              type="date"
-              className="h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm text-foreground focus-ring"
-              value={startDate}
-              onChange={(e) => {
-                setStartDate(e.target.value);
-                setCurrentPage(1);
-              }}
-            />
-          </div>
-
-          {/* End Date */}
-          <div className="relative">
-            <span className="absolute right-3 top-2.5 text-xs text-muted-foreground pointer-events-none">End</span>
-            <input
-              type="date"
-              className="h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm text-foreground focus-ring"
-              value={endDate}
-              onChange={(e) => {
-                setEndDate(e.target.value);
-                setCurrentPage(1);
-              }}
-            />
-          </div>
-
-          {/* Sorting */}
-          <select
-            className="h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm text-foreground focus-ring"
-            value={sortBy}
-            onChange={(e) => {
-              setSortBy(e.target.value);
+          <CustomDatePicker
+            value={startDate}
+            onChange={(val) => {
+              setStartDate(val);
               setCurrentPage(1);
             }}
-          >
-            <option value="newest">Newest First</option>
-            <option value="oldest">Oldest First</option>
-          </select>
+            label="Start"
+          />
+
+          {/* End Date */}
+          <CustomDatePicker
+            value={endDate}
+            onChange={(val) => {
+              setEndDate(val);
+              setCurrentPage(1);
+            }}
+            label="End"
+          />
+
+          {/* Sorting */}
+          <CustomSelect
+            value={sortBy}
+            onChange={(val) => {
+              setSortBy(val);
+              setCurrentPage(1);
+            }}
+            options={[
+              { value: "newest", label: "Newest First" },
+              { value: "oldest", label: "Oldest First" }
+            ]}
+            placeholder="Sort Order"
+          />
 
           {/* Reset Filters */}
-          <button
+          <Button
             onClick={clearFilters}
-            className="inline-flex items-center justify-center gap-1.5 h-10 w-full rounded-md border border-border bg-secondary/50 hover:bg-secondary text-sm font-medium transition-colors focus-ring"
+            variant="outline"
+            className="w-full bg-secondary/50 hover:bg-secondary border-border"
           >
             <Trash2 className="h-4 w-4" />
             Reset Filters
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -415,12 +555,11 @@ export function HistoryView() {
           <p className="text-sm text-muted-foreground max-w-sm mb-6">
             Get started by analyzing a GitHub repository to build documentation.
           </p>
-          <button
+          <GradientButton
             onClick={() => router.push("/analyze")}
-            className="inline-flex h-10 items-center justify-center rounded-md bg-brand-cyan px-6 text-sm font-semibold text-black shadow-lg shadow-brand-cyan/20 hover:opacity-90 transition-opacity"
           >
             Analyze a Repository
-          </button>
+          </GradientButton>
         </div>
       ) : (
         /* Event List / Timeline */
@@ -472,18 +611,16 @@ export function HistoryView() {
                     </div>
 
                     <div className="shrink-0 flex items-center">
-                      <button
+                      <Button
                         onClick={() => handleNavigation(activity)}
                         disabled={hasDoc && isDocDeleted}
-                        className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${
-                          hasDoc && isDocDeleted
-                            ? "border-border bg-muted/20 text-muted-foreground/40 cursor-not-allowed"
-                            : "border-border bg-background hover:bg-secondary hover:border-brand-cyan/40 text-foreground"
-                        }`}
+                        variant="outline"
+                        size="sm"
+                        className={hasDoc && isDocDeleted ? "cursor-not-allowed opacity-50" : "hover:border-brand-cyan/40"}
                       >
                         View
                         <ChevronRight className="h-3 w-3" />
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 );

@@ -98,28 +98,28 @@
 .dark {
   --background: #020617; /* Deep navy/near-black */
   --foreground: #f8fafc;
-  
+
   --card: #0f172a; /* Dark layered surface */
   --card-foreground: #f8fafc;
-  
+
   --popover: #0f172a;
   --popover-foreground: #f8fafc;
-  
+
   --primary: #3b82f6; /* Electric blue */
   --primary-foreground: #ffffff;
-  
+
   --secondary: #1e293b; /* slate-800 */
   --secondary-foreground: #f8fafc;
-  
+
   --muted: #1e293b;
   --muted-foreground: #94a3b8; /* slate-400 */
-  
+
   --accent: #1e293b;
   --accent-foreground: #f8fafc;
-  
-  --destructive: #7f1d1d; /* red-900 */
-  --destructive-foreground: #f8fafc;
-  
+
+  --destructive: #ef4444; /* red-500 — visible on dark backgrounds */
+  --destructive-foreground: #ffffff;
+
   --border: #1e293b;
   --input: #1e293b;
   --ring: #3b82f6;
@@ -135,7 +135,41 @@
   }
 }
 
-/* Custom sleek and slim scrollbars matching the web UI's theme colors */
+/* ─── Custom Utilities ───────────────────────────────────────────────── */
+
+/* Fluid responsive typography — headings scale with viewport */
+@utility text-fluid-3xl {
+  font-size: clamp(1.5rem, 1.2rem + 1.5vw, 1.875rem);
+  line-height: 1.2;
+}
+
+@utility text-fluid-4xl {
+  font-size: clamp(1.875rem, 1.4rem + 2vw, 2.25rem);
+  line-height: 1.1;
+}
+
+@utility text-fluid-5xl {
+  font-size: clamp(2rem, 1.5rem + 2.5vw, 3rem);
+  line-height: 1.1;
+}
+
+/* Micro text utility used by badges */
+@utility text-xxs {
+  font-size: 0.625rem;
+  line-height: 1rem;
+}
+
+/* Hide scrollbar utility used on sidebar nav */
+@utility scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ─── Scrollbar Styling ──────────────────────────────────────────────── */
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -162,7 +196,8 @@
   scrollbar-color: var(--border) transparent;
 }
 
-/* Custom micro-animations for dialogs */
+/* ─── Animations ─────────────────────────────────────────────────────── */
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -221,10 +256,9 @@
   );
 }
 
-/* Global focus state utilities */
+/* ─── Focus Utilities ────────────────────────────────────────────────── */
+
 .focus-ring {
   @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-background;
 }
-
-
 

@@ -13,6 +13,7 @@ import {
   AlertCircle,
   Settings,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface Provider {
   id: string;
@@ -253,28 +254,30 @@ export function SettingsView() {
             <div className="flex items-center gap-2">
               {githubState.connected ? (
                 <>
-                  <button
+                  <Button
                     onClick={handleConnect}
-                    className="h-10 px-4 rounded-lg border border-border bg-background hover:bg-secondary text-xs font-semibold text-foreground transition-colors focus-ring"
+                    variant="outline"
+                    className="text-xs h-10 px-4 font-semibold"
                   >
                     Reconnect
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={handleDisconnect}
-                    className="h-10 px-4 rounded-lg bg-destructive/10 hover:bg-destructive/20 border border-destructive/20 text-xs font-semibold text-destructive transition-colors focus-ring"
+                    variant="destructive"
+                    className="text-xs h-10 px-4 font-semibold"
                     disabled={isDisconnecting}
                   >
                     {isDisconnecting ? "Disconnecting..." : "Disconnect"}
-                  </button>
+                  </Button>
                 </>
               ) : (
-                <button
+                <Button
                   onClick={handleConnect}
-                  className="h-10 px-5 rounded-lg bg-brand-cyan hover:opacity-90 text-xs font-bold text-black transition-opacity disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-brand-cyan/15 focus-ring"
+                  className="h-10 px-5 bg-brand-cyan hover:opacity-90 text-xs font-bold text-black transition-opacity disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-brand-cyan/15 focus-ring"
                   disabled={!githubState.configured}
                 >
                   Connect GitHub Account
-                </button>
+                </Button>
               )}
             </div>
           </div>

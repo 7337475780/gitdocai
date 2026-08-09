@@ -142,7 +142,7 @@ export function GitHubRepositoriesView() {
           description={error}
           action={
             <SecondaryButton onClick={fetchStatus}>
-              <RefreshCw className="h-4 w-4 mr-2" /> Retry
+              <RefreshCw className="h-4 w-4" /> Retry
             </SecondaryButton>
           }
         />
@@ -284,7 +284,7 @@ export function GitHubRepositoriesView() {
             description={search ? "Try adjusting your search criteria." : "GitHub returned 0 accessible repositories."}
             action={
               <GradientButton onClick={() => fetchRepos(search)}>
-                <RefreshCw className="h-4 w-4 mr-2" /> Reload
+                <RefreshCw className="h-4 w-4" /> Reload
               </GradientButton>
             }
           />
@@ -406,14 +406,14 @@ export function GitHubRepositoriesView() {
                         onClick={() => router.push(`/repository/${repo.analysisId}/intelligence`)}
                         className="flex-1 text-xs py-2 h-auto"
                       >
-                        <Eye className="h-3.5 w-3.5 mr-1" /> View Analysis
+                        <Eye className="h-3.5 w-3.5" /> View Analysis
                       </SecondaryButton>
                     ) : (
                       <GradientButton
                         onClick={() => router.push(`/analyze?url=${encodeURIComponent(`https://github.com/${repo.fullName}`)}`)}
                         className="flex-1 text-xs py-2 h-auto"
                       >
-                        <Sparkles className="h-3.5 w-3.5 mr-1" /> Analyze
+                        <Sparkles className="h-3.5 w-3.5" /> Analyze
                       </GradientButton>
                     )}
                     <a

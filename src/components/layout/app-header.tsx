@@ -1,18 +1,62 @@
-"use client";
-
 import * as React from "react";
 import { useTheme } from "next-themes";
-import { Search, Sun, Moon, Menu } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Search, Sun, Moon, Menu, Loader2, AlertCircle, FileText, FolderGit } from "lucide-react";
 import { IconButton } from "@/components/ui/button";
+import * as Dialog from "@radix-ui/react-dialog";
+import { cn } from "@/lib/utils";
+
+interface SearchResult {
+  id: string;
+  name?: string;
+  fullName?: string;
+  title?: string;
+  type?: string;
+  repositoryName?: string;
+  repositoryAnalysisId?: string;
+  createdAt?: string;
+}
 
 export function AppHeader({
   onMenuClick,
 }: {
   onMenuClick?: () => void;
 }) {
+  const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
   const [user, setUser] = React.useState<{ name: string; avatarUrl?: string } | null>(null);
+  
+  // Search state
+  const [open, setOpen] = React.useState(false);
+  const [query, setQuery] = React.useState("");
+  const [results, setResults] = React.useState<{ repositories: SearchResult[]; documents: SearchResult[] }>({
+    repositories: [],
+    documents: [],
+  });
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [selectedIndex, setSelectedIndex] = React.useState(0);
+  const [isMac, setIsMac] = React.useState(true);
+
+  // Detect platform
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsMac(/Mac|iPod|iPhone|iPad/.test(navigator.platform));
+    }
+  }, []);
+
+  // Listen to Cmd/Ctrl + K hotkeys
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setOpen((o) => !o);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   React.useEffect(() => {
     setMounted(true);
@@ -26,6 +70,85 @@ export function AppHeader({
       .catch(() => {});
   }, []);
 
+  // Reset search when modal closes
+  React.useEffect(() => {
+    if (!open) {
+      setQuery("");
+      setResults({ repositories: [], documents: [] });
+      setError(null);
+    }
+  }, [open]);
+
+  // Debounced search queries
+  React.useEffect(() => {
+    if (query.trim().length < 2) {
+      setResults({ repositories: [], documents: [] });
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    const controller = new AbortController();
+    const delayDebounce = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`, {
+          signal: controller.signal,
+        });
+        const data = await res.json();
+        if (data.success) {
+          setResults(data.data);
+          setSelectedIndex(0);
+        } else {
+          setError(data.error || "Search failed");
+        }
+      } catch (err: any) {
+        if (err.name !== 'AbortError') {
+          setError("Search failed. Please try again.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    }, 250);
+
+    return () => {
+      clearTimeout(delayDebounce);
+      controller.abort();
+    };
+  }, [query]);
+
+  // Compile flat items for list index calculations
+  const flatItems = [
+    ...results.repositories.map(r => ({ ...r, category: 'repositories' })),
+    ...results.documents.map(d => ({ ...d, category: 'documents' })),
+  ];
+
+  // Command palette keyboard navigation handlers
+  const handleDialogKeyDown = (e: React.KeyboardEvent) => {
+    if (flatItems.length === 0) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev + 1) % flatItems.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev - 1 + flatItems.length) % flatItems.length);
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      const selectedItem = flatItems[selectedIndex];
+      if (selectedItem) {
+        if (selectedItem.category === 'repositories') {
+          router.push(`/repository/${selectedItem.id}/intelligence`);
+        } else {
+          router.push(`/studio/${selectedItem.id}`);
+        }
+        setOpen(false);
+      }
+    }
+  };
+
   return (
     <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-border bg-background/80 px-4 backdrop-blur-md sm:px-6">
       <div className="flex items-center gap-4">
@@ -37,20 +160,160 @@ export function AppHeader({
             aria-label="Toggle menu"
           />
         )}
-        <div className="relative hidden sm:block">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search repositories, docs..."
-            className="h-9 w-64 md:w-80 rounded-md border border-input bg-card/50 pl-9 pr-12 text-sm text-foreground shadow-sm transition-colors focus:border-brand-cyan focus:outline-none focus:ring-1 focus:ring-brand-cyan"
-          />
-          <div className="absolute right-3 top-1/2 -translate-y-1/2">
-            <kbd className="inline-flex h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-              ⌘K
+        
+        {/* Mobile Search Button */}
+        <IconButton
+          icon={<Search className="h-5 w-5" />}
+          onClick={() => setOpen(true)}
+          className="sm:hidden text-muted-foreground hover:text-foreground"
+          aria-label="Open search dialog"
+        />
+
+        {/* Desktop Search Button */}
+        <div 
+          onClick={() => setOpen(true)}
+          className="relative hidden sm:block cursor-pointer group"
+        >
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-hover:text-foreground transition-colors" />
+          <div className="flex h-9 w-64 md:w-80 items-center justify-between rounded-md border border-input bg-card/50 pl-9 pr-3 text-sm text-muted-foreground shadow-sm group-hover:border-brand-cyan transition-colors">
+            <span>Search repositories, docs...</span>
+            <kbd className="inline-flex h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground pointer-events-none">
+              {isMac ? "⌘K" : "Ctrl+K"}
             </kbd>
           </div>
         </div>
       </div>
+
+      <Dialog.Root open={open} onOpenChange={setOpen}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-fade-in" />
+          <Dialog.Content 
+            className="fixed left-[50%] top-[50%] z-50 w-full max-w-lg border border-border bg-card shadow-2xl rounded-2xl outline-none animate-scale-in p-0 overflow-hidden" 
+            style={{ transform: "translate(-50%, -50%)" }}
+            onKeyDown={handleDialogKeyDown}
+          >
+            <div className="flex items-center border-b border-border px-4 py-3">
+              <Search className="h-5 w-5 text-muted-foreground mr-3" />
+              <input
+                type="text"
+                placeholder="Search repositories, docs..."
+                className="w-full bg-transparent border-0 p-0 text-sm text-foreground placeholder:text-muted-foreground focus:ring-0 focus:outline-none"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                autoFocus
+              />
+              <button 
+                onClick={() => setOpen(false)}
+                className="text-xs text-muted-foreground hover:text-foreground border border-border px-1.5 py-0.5 rounded bg-secondary/50"
+              >
+                ESC
+              </button>
+            </div>
+
+            <div className="max-h-96 overflow-y-auto p-2 custom-scrollbar">
+              {loading && (
+                <div className="flex items-center justify-center py-6 text-sm text-muted-foreground gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin text-brand-cyan" />
+                  <span>Searching...</span>
+                </div>
+              )}
+
+              {error && (
+                <div className="flex items-center justify-center py-6 text-sm text-destructive gap-2">
+                  <AlertCircle className="h-4 w-4" />
+                  <span>{error}</span>
+                </div>
+              )}
+
+              {!loading && !error && query.trim().length >= 2 && flatItems.length === 0 && (
+                <div className="text-center py-6 text-sm text-muted-foreground">
+                  No results found for &ldquo;{query}&rdquo;
+                </div>
+              )}
+
+              {!loading && !error && query.trim().length < 2 && (
+                <div className="text-center py-6 text-xs text-muted-foreground">
+                  Type at least 2 characters to search...
+                </div>
+              )}
+
+              {!loading && !error && flatItems.length > 0 && (
+                <div className="space-y-4">
+                  {results.repositories.length > 0 && (
+                    <div>
+                      <div className="px-3 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                        Repositories
+                      </div>
+                      <div className="space-y-0.5">
+                        {results.repositories.map((repo, idx) => {
+                          const flatIdx = idx;
+                          const isSelected = flatIdx === selectedIndex;
+                          return (
+                            <button
+                              key={repo.id}
+                              onClick={() => {
+                                router.push(`/repository/${repo.id}/intelligence`);
+                                setOpen(false);
+                              }}
+                              className={cn(
+                                "flex w-full items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors",
+                                isSelected ? "bg-brand-cyan/10 text-brand-cyan font-medium" : "text-foreground hover:bg-secondary/40"
+                              )}
+                            >
+                              <FolderGit className="h-4 w-4 shrink-0 text-muted-foreground" />
+                              <div className="truncate">
+                                <div className="text-xs font-semibold">{repo.name}</div>
+                                <div className="text-[10px] text-muted-foreground truncate">{repo.fullName}</div>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {results.documents.length > 0 && (
+                    <div>
+                      <div className="px-3 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                        Documentation
+                      </div>
+                      <div className="space-y-0.5">
+                        {results.documents.map((doc, idx) => {
+                          const flatIdx = results.repositories.length + idx;
+                          const isSelected = flatIdx === selectedIndex;
+                          return (
+                            <button
+                              key={doc.id}
+                              onClick={() => {
+                                router.push(`/studio/${doc.id}`);
+                                setOpen(false);
+                              }}
+                              className={cn(
+                                "flex w-full items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors",
+                                isSelected ? "bg-brand-cyan/10 text-brand-cyan font-medium" : "text-foreground hover:bg-secondary/40"
+                              )}
+                            >
+                              <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+                              <div className="truncate">
+                                <div className="text-xs font-semibold">{doc.title}</div>
+                                <div className="text-[10px] text-muted-foreground flex items-center gap-2">
+                                  <span>{doc.type}</span>
+                                  <span>&bull;</span>
+                                  <span>{doc.repositoryName}</span>
+                                </div>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
 
       <div className="flex items-center gap-2 sm:gap-4">
         <div className="flex items-center gap-1 sm:gap-2">

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, Check, Loader2, AlertTriangle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface MarkReviewedModalProps {
   open: boolean;
@@ -58,12 +59,14 @@ export function MarkReviewedModal({
                 Mark {fileName} as reviewed?
               </Dialog.Title>
             </div>
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => onOpenChange(false)}
               className="rounded-lg p-1 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
             >
               <X className="w-5 h-5" />
-            </button>
+            </Button>
           </div>
 
           <Dialog.Description className="text-sm text-muted-foreground mb-6 leading-relaxed">
@@ -78,16 +81,16 @@ export function MarkReviewedModal({
           )}
 
           <div className="flex gap-3 justify-end">
-            <button
+            <Button
               onClick={() => onOpenChange(false)}
-              className="px-4 py-2 border border-border bg-transparent hover:bg-secondary text-foreground font-medium rounded-lg transition-colors text-sm"
+              variant="outline"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleConfirm}
               disabled={isSubmitting}
-              className="px-4 py-2 bg-emerald-500 text-background hover:bg-emerald-400 font-medium rounded-lg transition-colors text-sm flex items-center gap-2 disabled:opacity-50"
+              className="bg-emerald-600 hover:bg-emerald-500 text-white font-medium"
             >
               {isSubmitting ? (
                 <>
@@ -100,7 +103,7 @@ export function MarkReviewedModal({
                   <span>Mark as reviewed</span>
                 </>
               )}
-            </button>
+            </Button>
           </div>
 
         </Dialog.Content>

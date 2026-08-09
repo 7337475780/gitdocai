@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useDialog } from '@/components/ui/dialog-provider';
+import { Button, GradientButton } from '@/components/ui/button';
 import { Download, Copy, RefreshCw, CheckCircle2, Loader2, CircleAlert, History, LayoutDashboard } from 'lucide-react';
-import { GradientButton } from '@/components/ui/button';
 import { DocumentationQualityResult } from '@/lib/documentation-quality/quality-types';
 import { QualityPanel } from './quality-panel';
 import { GitHubCommitModal } from './github-commit-modal';
@@ -183,30 +183,30 @@ export function StudioToolbar({
       {/* Right */}
       <div className="flex items-center gap-2">
         {!checkingGithub && !githubConnected && (
-          <button
+          <Button
             onClick={handleConnectGithub}
-            className="hidden lg:flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-[#2da44e] hover:bg-[#2c974b] rounded-md transition-colors"
+            className="hidden lg:inline-flex bg-[#2da44e] hover:bg-[#2c974b] text-white"
           >
             <GithubIcon className="h-4 w-4" />
             Connect GitHub
-          </button>
+          </Button>
         )}
 
         {!checkingGithub && githubConnected && (
           <>
-            <button
+            <Button
               onClick={handleOpenCommitModal}
-              className="hidden lg:flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-background bg-foreground hover:bg-foreground/90 rounded-md transition-colors whitespace-nowrap shrink-0"
+              className="hidden lg:inline-flex bg-foreground text-background hover:bg-foreground/90 whitespace-nowrap shrink-0"
             >
               <GithubIcon className="h-4 w-4" />
               Commit to GitHub
-            </button>
+            </Button>
             
             <Popover.Root>
               <Popover.Trigger asChild>
-                <button className="hidden lg:flex items-center justify-center h-8 w-8 rounded-md bg-secondary hover:bg-secondary/85 text-muted-foreground transition-colors" title="GitHub Connected">
+                <Button variant="secondary" size="icon" className="hidden lg:inline-flex text-muted-foreground" title="GitHub Connected">
                   <CheckCircle2 className="h-4 w-4 text-[#2da44e]" />
-                </button>
+                </Button>
               </Popover.Trigger>
               <Popover.Portal>
                 <Popover.Content className="z-50 w-56 rounded-xl border border-border bg-card p-4 text-card-foreground shadow-xl animate-in fade-in-0 zoom-in-95" sideOffset={8} align="end">
@@ -216,12 +216,12 @@ export function StudioToolbar({
                   <p className="text-xs text-muted-foreground mb-4">You can commit documentation directly to your repositories.</p>
                   
                   <div className="flex flex-col gap-2">
-                    <button onClick={handleConnectGithub} className="text-sm text-left px-2 py-1.5 rounded bg-secondary hover:bg-secondary/80 text-foreground transition-colors">
+                    <Button onClick={handleConnectGithub} variant="secondary" className="justify-start text-xs h-8 px-2 w-full">
                       Reconnect
-                    </button>
-                    <button onClick={handleDisconnectGithub} disabled={disconnecting} className="text-sm text-left px-2 py-1.5 rounded bg-brand-amber/10 hover:bg-brand-amber/20 text-brand-amber transition-colors">
+                    </Button>
+                    <Button onClick={handleDisconnectGithub} disabled={disconnecting} variant="destructive" className="justify-start text-xs h-8 px-2 w-full">
                       {disconnecting ? 'Disconnecting...' : 'Disconnect'}
-                    </button>
+                    </Button>
                   </div>
                 </Popover.Content>
               </Popover.Portal>
@@ -229,23 +229,25 @@ export function StudioToolbar({
           </>
         )}
 
-        <button 
+        <Button 
           onClick={onRegenerate} 
           disabled={isRegenerating}
-          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-foreground bg-secondary hover:bg-secondary/80 rounded-md transition-colors disabled:opacity-50 whitespace-nowrap shrink-0"
+          variant="secondary"
+          className="whitespace-nowrap shrink-0"
         >
           {isRegenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
           <span className="hidden sm:inline">{isRegenerating ? 'Regenerating...' : 'Regenerate'}</span>
-        </button>
+        </Button>
 
-        <button 
+        <Button 
           onClick={onToggleHistory} 
-          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition-colors whitespace-nowrap shrink-0"
+          variant="ghost"
+          className="text-muted-foreground hover:text-foreground whitespace-nowrap shrink-0"
           title="Version History"
         >
           <History className="h-4 w-4" />
           <span className="hidden sm:inline">History</span>
-        </button>
+        </Button>
 
         <ExportMenu
           documentId={documentId}
@@ -253,21 +255,9 @@ export function StudioToolbar({
           repositoryAnalysisId={repositoryAnalysisId}
           onOpenSitePreview={onOpenSitePreview || (() => {})}
           onOpenPublishModal={onOpenPublishModal || (() => {})}
+          onCopy={onCopy}
+          onDownload={onDownload}
         />
-
-        <button 
-          onClick={onCopy} 
-          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition-colors whitespace-nowrap shrink-0"
-          title="Copy Markdown"
-        >
-          <Copy className="h-4 w-4" />
-          <span className="sr-only">Copy</span>
-        </button>
-
-        <GradientButton onClick={onDownload} className="h-8 px-3 py-1 text-sm gap-2 whitespace-nowrap shrink-0">
-          <Download className="h-4 w-4" />
-          <span className="hidden sm:inline">Download</span>
-        </GradientButton>
       </div>
 
       <GitHubCommitModal 
@@ -296,24 +286,23 @@ export function StudioToolbar({
             </div>
 
             <div className="flex gap-3 justify-end">
-              <button
+              <Button
                 onClick={() => {
                   setShowLowQualityWarning(false);
                   setQualityPanelOpen(true);
                 }}
-                className="px-4 py-2 border border-border bg-transparent hover:bg-secondary text-foreground font-medium rounded-lg transition-colors text-sm"
+                variant="outline"
               >
                 Review Suggestions
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => {
                   setShowLowQualityWarning(false);
                   setCommitModalOpen(true);
                 }}
-                className="px-4 py-2 bg-foreground text-background hover:bg-foreground/90 font-medium rounded-lg transition-colors text-sm"
               >
                 Commit Anyway
-              </button>
+              </Button>
             </div>
           </Dialog.Content>
         </Dialog.Portal>

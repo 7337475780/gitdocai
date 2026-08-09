@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, CheckCircle2, CircleAlert, Loader2, GitCommitHorizontal, ExternalLink } from 'lucide-react';
 import { GithubIcon } from '@/components/ui/icons';
+import { CustomSelect } from '@/components/ui/custom-select';
 
 interface GitHubCommitModalProps {
   open: boolean;
@@ -221,47 +222,43 @@ export function GitHubCommitModal({ open, onOpenChange, documentId }: GitHubComm
             <div className="space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Repository</label>
-                <div className="relative">
-                  <select 
-                    value={selectedRepo}
-                    onChange={(e) => setSelectedRepo(e.target.value)}
-                    disabled={loadingRepos || repositories.length === 0}
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-brand-cyan/50 disabled:opacity-50"
-                  >
-                    {loadingRepos ? (
-                      <option>Loading repositories...</option>
-                    ) : repositories.length === 0 ? (
-                      <option>No repositories found</option>
-                    ) : (
-                      repositories.map(repo => (
-                        <option key={repo.fullName} value={repo.fullName} className="bg-card text-card-foreground">
-                          {repo.fullName} {repo.private ? '(Private)' : ''}
-                        </option>
-                      ))
-                    )}
-                  </select>
-                </div>
+                <CustomSelect
+                  value={selectedRepo}
+                  onChange={setSelectedRepo}
+                  options={
+                    loadingRepos
+                      ? [{ value: "", label: "Loading repositories..." }]
+                      : repositories.length === 0
+                      ? [{ value: "", label: "No repositories found" }]
+                      : repositories.map((repo) => ({
+                          value: repo.fullName,
+                          label: `${repo.fullName} ${repo.private ? "(Private)" : ""}`,
+                        }))
+                  }
+                  placeholder="Select Repository"
+                  className={loadingRepos || repositories.length === 0 ? "opacity-50 pointer-events-none" : ""}
+                />
                 {repoError && <p className="text-xs text-red-400 mt-1">{repoError}</p>}
               </div>
 
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Branch</label>
-                <select 
+                <CustomSelect
                   value={selectedBranch}
-                  onChange={(e) => setSelectedBranch(e.target.value)}
-                  disabled={loadingBranches || branches.length === 0}
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-brand-cyan/50 disabled:opacity-50"
-                >
-                  {loadingBranches ? (
-                    <option>Loading branches...</option>
-                  ) : branches.length === 0 ? (
-                    <option>No branches available</option>
-                  ) : (
-                    branches.map(branch => (
-                      <option key={branch.name} value={branch.name} className="bg-card text-card-foreground">{branch.name}</option>
-                    ))
-                  )}
-                </select>
+                  onChange={setSelectedBranch}
+                  options={
+                    loadingBranches
+                      ? [{ value: "", label: "Loading branches..." }]
+                      : branches.length === 0
+                      ? [{ value: "", label: "No branches available" }]
+                      : branches.map((branch) => ({
+                          value: branch.name,
+                          label: branch.name,
+                        }))
+                  }
+                  placeholder="Select Branch"
+                  className={loadingBranches || branches.length === 0 ? "opacity-50 pointer-events-none" : ""}
+                />
               </div>
 
               <div className="space-y-2">

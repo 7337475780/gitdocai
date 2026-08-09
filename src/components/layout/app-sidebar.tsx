@@ -56,7 +56,9 @@ export function AppSidebar({ className }: { className?: string }) {
           <img
             src="/logo.png"
             alt="GitDoc AI Logo"
-            className="w-8 h-8 "
+            width={32}
+            height={32}
+            className="w-8 h-8"
           />
           <span className="text-lg font-bold tracking-tight text-foreground">
             GitDoc AI
@@ -74,7 +76,7 @@ export function AppSidebar({ className }: { className?: string }) {
             <Link
               key={item.name}
               href={item.href}
-              className="relative flex items-center"
+              className="relative flex items-center rounded-lg focus-ring"
             >
               <div
                 className={cn(
@@ -87,16 +89,13 @@ export function AppSidebar({ className }: { className?: string }) {
                 {isActive && (
                   <motion.div
                     layoutId="active-nav"
-                    className="absolute inset-0 rounded-lg bg-brand-cyan/10 border border-brand-cyan/20"
+                    className="absolute inset-0 rounded-lg bg-brand-cyan/10"
                     initial={false}
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
                   />
                 )}
                 <Icon className={cn("h-4 w-4 relative z-10", isActive ? "text-brand-cyan" : "")} />
                 <span className="relative z-10">{item.name}</span>
-                {isActive && (
-                  <div className="relative z-10 ml-auto h-1.5 w-1.5 rounded-full bg-brand-cyan shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
-                )}
               </div>
             </Link>
           );

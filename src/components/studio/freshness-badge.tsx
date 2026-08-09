@@ -27,10 +27,10 @@ export function FreshnessBadge({ status, impactScore, onClick, isLoading }: Fres
       return (
         <button
           onClick={onClick}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors whitespace-nowrap shrink-0"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-colors whitespace-nowrap shrink-0"
           title="No relevant repository changes detected since last review"
         >
-          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 dark:text-emerald-400" />
           <span>Up to date</span>
         </button>
       );
@@ -39,10 +39,10 @@ export function FreshnessBadge({ status, impactScore, onClick, isLoading }: Fres
       return (
         <button
           onClick={onClick}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 hover:bg-cyan-500/20 transition-colors whitespace-nowrap shrink-0"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-cyan-55 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-500/20 hover:bg-cyan-100 dark:hover:bg-cyan-500/20 transition-colors whitespace-nowrap shrink-0"
           title="Repository changes detected; low documentation impact"
         >
-          <Clock className="h-3.5 w-3.5 text-cyan-400" />
+          <Clock className="h-3.5 w-3.5 text-cyan-500 dark:text-cyan-400" />
           <span>Changes detected</span>
         </button>
       );
@@ -51,13 +51,13 @@ export function FreshnessBadge({ status, impactScore, onClick, isLoading }: Fres
       return (
         <button
           onClick={onClick}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition-colors whitespace-nowrap shrink-0"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20 hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-colors whitespace-nowrap shrink-0"
           title={`Repository changes may affect documentation (Score: ${impactScore ?? 0})`}
         >
-          <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />
+          <AlertTriangle className="h-3.5 w-3.5 text-amber-500 dark:text-amber-400" />
           <span>Review recommended</span>
           {impactScore !== undefined && impactScore > 0 && (
-            <span className="ml-0.5 px-1.5 py-0.2 rounded-full bg-amber-500/20 text-[10px]">
+            <span className="ml-0.5 px-1.5 py-0.2 rounded-full bg-amber-100 dark:bg-amber-500/20 text-[10px]">
               {impactScore}
             </span>
           )}
@@ -68,10 +68,10 @@ export function FreshnessBadge({ status, impactScore, onClick, isLoading }: Fres
       return (
         <button
           onClick={onClick}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 transition-colors animate-pulse whitespace-nowrap shrink-0"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-500/20 hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-colors animate-pulse whitespace-nowrap shrink-0"
           title="Repository changes directly conflict with documented information"
         >
-          <AlertCircle className="h-3.5 w-3.5 text-rose-400" />
+          <AlertCircle className="h-3.5 w-3.5 text-rose-500 dark:text-rose-400" />
           <span>Potentially outdated</span>
         </button>
       );

@@ -9,6 +9,8 @@ import {
   AlertCircle,
   BookOpen,
 } from "lucide-react";
+import { Button, GradientButton } from "@/components/ui/button";
+import { CustomSelect } from "@/components/ui/custom-select";
 
 interface Template {
   id: "professional" | "opensource" | "api" | "library" | "minimal";
@@ -219,12 +221,12 @@ export function TemplatesView() {
           <p className="text-sm text-muted-foreground mb-8 max-w-md">
             Analyze a repository before generating documentation. GitDoc AI needs a repository structure and analysis to build accurate documents.
           </p>
-          <button
+          <GradientButton
             onClick={() => router.push("/analyze")}
-            className="inline-flex h-11 items-center justify-center rounded-lg bg-brand-cyan px-6 text-sm font-semibold text-black hover:opacity-90 transition-opacity shadow-lg shadow-brand-cyan/20"
+            className="h-11"
           >
             Analyze Repository
-          </button>
+          </GradientButton>
         </div>
       </div>
     );
@@ -263,18 +265,16 @@ export function TemplatesView() {
             <label htmlFor="repo-select" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
               Select Target Repository Analysis
             </label>
-            <select
-              id="repo-select"
-              className="h-11 w-full rounded-lg border border-input bg-background/50 px-3 py-2 text-sm text-foreground focus-ring"
+            <CustomSelect
               value={selectedRepoId}
-              onChange={(e) => setSelectedRepoId(e.target.value)}
-            >
-              {repositories.map((repo) => (
-                <option key={repo.id} value={repo.id}>
-                  {repo.owner}/{repo.name}
-                </option>
-              ))}
-            </select>
+              onChange={setSelectedRepoId}
+              options={repositories.map((repo) => ({
+                value: repo.id,
+                label: `${repo.owner}/${repo.name}`,
+              }))}
+              placeholder="Select Target Repository"
+              className="h-11"
+            />
           </div>
 
           {/* Template Grid */}
@@ -312,13 +312,14 @@ export function TemplatesView() {
                 </div>
 
                 <div className="mt-6 pt-4 border-t border-border/60">
-                  <button
+                  <Button
+                    variant="link"
                     onClick={() => setSelectedTemplate(tmpl)}
-                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-cyan group-hover:text-foreground transition-colors"
+                    className="p-0 text-brand-cyan group-hover:text-foreground h-auto flex items-center gap-1.5 font-semibold"
                   >
                     Select Template
                     <ArrowRight className="h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
-                  </button>
+                  </Button>
                 </div>
               </div>
             ))}
@@ -337,13 +338,14 @@ export function TemplatesView() {
                   </span>
                   <h3 className="text-xl font-bold text-foreground">{selectedTemplate.name}</h3>
                 </div>
-                <button
+                <Button
+                  variant="ghost"
                   onClick={() => setSelectedTemplate(null)}
-                  className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-xs font-semibold text-muted-foreground hover:text-foreground h-auto py-1 px-2.5"
                   disabled={isGenerating}
                 >
                   Change Template
-                </button>
+                </Button>
               </div>
 
               {/* Title option */}
@@ -362,16 +364,17 @@ export function TemplatesView() {
               {/* Detail Level */}
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-foreground">Documentation Detail Level</label>
-                <select
-                  className="h-11 w-full rounded-lg border border-input bg-background/50 px-3 py-2 text-sm text-foreground focus-ring"
+                <CustomSelect
                   value={detailLevel}
-                  onChange={(e) => setDetailLevel(e.target.value as any)}
-                  disabled={isGenerating}
-                >
-                  <option value="concise">Concise - compact, to-the-point</option>
-                  <option value="standard">Standard - balanced level of detail</option>
-                  <option value="detailed">Detailed - in-depth, thorough coverage</option>
-                </select>
+                  onChange={(val) => setDetailLevel(val as any)}
+                  options={[
+                    { value: "concise", label: "Concise - compact, to-the-point" },
+                    { value: "standard", label: "Standard - balanced level of detail" },
+                    { value: "detailed", label: "Detailed - in-depth, thorough coverage" },
+                  ]}
+                  placeholder="Detail Level"
+                  className={`h-11 ${isGenerating ? "opacity-50 pointer-events-none" : ""}`}
+                />
               </div>
 
               {/* Toggle Options */}
@@ -438,16 +441,17 @@ export function TemplatesView() {
 
               {/* Action Buttons */}
               <div className="pt-4 flex items-center justify-end gap-3 border-t border-border">
-                <button
+                <Button
                   onClick={() => setSelectedTemplate(null)}
-                  className="h-11 px-6 rounded-lg border border-border text-sm font-semibold text-foreground hover:bg-secondary transition-colors focus-ring"
+                  variant="outline"
+                  className="h-11 px-6 font-semibold"
                   disabled={isGenerating}
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <GradientButton
                   onClick={handleGenerate}
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-brand-cyan px-6 text-sm font-semibold text-black hover:opacity-90 transition-opacity shadow-lg shadow-brand-cyan/20 disabled:opacity-50 disabled:cursor-not-allowed focus-ring"
+                  className="h-11 px-6 font-semibold"
                   disabled={isGenerating}
                 >
                   {isGenerating ? (
@@ -461,7 +465,7 @@ export function TemplatesView() {
                       Generate Documentation
                     </>
                   )}
-                </button>
+                </GradientButton>
               </div>
             </div>
           </div>

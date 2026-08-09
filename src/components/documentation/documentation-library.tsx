@@ -15,8 +15,9 @@ import {
   GitBranch,
 } from "lucide-react";
 import { GlassCard, StatusBadge } from "@/components/ui/card";
-import { GradientButton, SecondaryButton } from "@/components/ui/button";
+import { Button, GradientButton, SecondaryButton } from "@/components/ui/button";
 import { PageContainer, EmptyState, LoadingSkeleton } from "@/components/ui/layout";
+import { CustomSelect } from "@/components/ui/custom-select";
 
 // ─── Helpers ──────────────────────────────────────────────────────────
 
@@ -190,7 +191,7 @@ export function DocumentationLibraryView() {
           description={error}
           action={
             <SecondaryButton onClick={fetchDocuments}>
-              <RefreshCw className="h-4 w-4 mr-2" /> Retry
+              <RefreshCw className="h-4 w-4" /> Retry
             </SecondaryButton>
           }
         />
@@ -231,59 +232,64 @@ export function DocumentationLibraryView() {
           </div>
 
           {/* Type Filter */}
-          <select
+          <CustomSelect
             value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-            className="bg-background/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-brand-cyan/50"
-          >
-            <option value="">All Document Types</option>
-            <option value="README">README</option>
-            <option value="SETUP">Setup Guide</option>
-            <option value="ARCHITECTURE">Architecture</option>
-            <option value="API">API Docs</option>
-            <option value="CONTRIBUTING">Contributing</option>
-          </select>
+            onChange={setTypeFilter}
+            options={[
+              { value: "", label: "All Document Types" },
+              { value: "README", label: "README" },
+              { value: "SETUP", label: "Setup Guide" },
+              { value: "ARCHITECTURE", label: "Architecture" },
+              { value: "API", label: "API Docs" },
+              { value: "CONTRIBUTING", label: "Contributing" },
+            ]}
+            placeholder="Document Type"
+          />
 
           {/* Quality Filter */}
-          <select
+          <CustomSelect
             value={qualityFilter}
-            onChange={(e) => setQualityFilter(e.target.value)}
-            className="bg-background/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-brand-cyan/50"
-          >
-            <option value="">All Quality Statuses</option>
-            <option value="EXCELLENT">Excellent (&ge;90)</option>
-            <option value="GOOD">Good (&ge;75)</option>
-            <option value="NEEDS_IMPROVEMENT">Needs Improvement</option>
-            <option value="POOR">Poor (&lt;60)</option>
-            <option value="UNKNOWN">Unassessed</option>
-          </select>
+            onChange={setQualityFilter}
+            options={[
+              { value: "", label: "All Quality Statuses" },
+              { value: "EXCELLENT", label: "Excellent (≥90)" },
+              { value: "GOOD", label: "Good (≥75)" },
+              { value: "NEEDS_IMPROVEMENT", label: "Needs Improvement" },
+              { value: "POOR", label: "Poor (<60)" },
+              { value: "UNKNOWN", label: "Unassessed" },
+            ]}
+            placeholder="Quality Status"
+          />
 
           {/* Freshness Filter */}
-          <select
+          <CustomSelect
             value={freshnessFilter}
-            onChange={(e) => setFreshnessFilter(e.target.value)}
-            className="bg-background/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-brand-cyan/50"
-          >
-            <option value="">All Freshness Statuses</option>
-            <option value="UP_TO_DATE">Up to date</option>
-            <option value="CHANGES_DETECTED">Changes detected</option>
-            <option value="REVIEW_RECOMMENDED">Review recommended</option>
-            <option value="OUTDATED">Stale / Outdated</option>
-            <option value="UNKNOWN">Unscanned</option>
-          </select>
+            onChange={setFreshnessFilter}
+            options={[
+              { value: "", label: "All Freshness Statuses" },
+              { value: "UP_TO_DATE", label: "Up to date" },
+              { value: "CHANGES_DETECTED", label: "Changes detected" },
+              { value: "REVIEW_RECOMMENDED", label: "Review recommended" },
+              { value: "OUTDATED", label: "Stale / Outdated" },
+              { value: "UNKNOWN", label: "Unscanned" },
+            ]}
+            placeholder="Freshness Status"
+          />
 
           {/* Sorting */}
           <div className="flex gap-2">
-            <select
+            <CustomSelect
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="flex-1 bg-background/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-brand-cyan/50"
-            >
-              <option value="updatedAt">Last Updated</option>
-              <option value="createdAt">Date Created</option>
-              <option value="title">Document Title</option>
-              <option value="qualityScore">Quality Score</option>
-            </select>
+              onChange={setSortBy}
+              options={[
+                { value: "updatedAt", label: "Last Updated" },
+                { value: "createdAt", label: "Date Created" },
+                { value: "title", label: "Document Title" },
+                { value: "qualityScore", label: "Quality Score" },
+              ]}
+              placeholder="Sort By"
+              className="flex-1"
+            />
             <button
               onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
               className="bg-background/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground hover:bg-secondary/50 transition-colors"
@@ -370,28 +376,34 @@ export function DocumentationLibraryView() {
                       <td className="px-6 py-4 text-muted-foreground">
                         {formatRelativeTime(doc.updatedAt)}
                       </td>
-                      <td className="px-6 py-4 text-right space-x-2">
-                        <button
+                      <td className="px-6 py-4 text-right whitespace-nowrap space-x-2">
+                        <Button
+                          variant="outline"
+                          size="icon"
                           onClick={() => router.push(`/studio/${doc.id}`)}
-                          className="p-1.5 rounded-lg border border-border bg-background/50 hover:bg-secondary/80 text-foreground transition-colors"
+                          className="h-8 w-8"
                           title="Open in Studio"
                         >
                           <Eye className="h-4 w-4" />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
                           onClick={() => router.push(`/studio/${doc.id}?tab=versions`)}
-                          className="p-1.5 rounded-lg border border-border bg-background/50 hover:bg-secondary/80 text-foreground transition-colors"
+                          className="h-8 w-8"
                           title="Version History"
                         >
                           <History className="h-4 w-4" />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
                           onClick={() => handleExport(doc.id, doc.title)}
-                          className="p-1.5 rounded-lg border border-border bg-background/50 hover:bg-secondary/80 text-foreground transition-colors"
+                          className="h-8 w-8"
                           title="Export Markdown"
                         >
                           <Download className="h-4 w-4" />
-                        </button>
+                        </Button>
                       </td>
                     </tr>
                   ))}
@@ -458,7 +470,7 @@ export function DocumentationLibraryView() {
                       onClick={() => router.push(`/studio/${doc.id}`)}
                       className="flex-1 text-xs py-2 h-auto"
                     >
-                      <Eye className="h-3.5 w-3.5 mr-1" /> Open
+                      <Eye className="h-3.5 w-3.5" /> Open
                     </SecondaryButton>
                     <SecondaryButton
                       onClick={() => handleExport(doc.id, doc.title)}
