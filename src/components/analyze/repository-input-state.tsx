@@ -99,7 +99,7 @@ export function RepositoryInputState() {
             </div>
 
             <GradientButton
-              className="w-full flex items-center justify-center gap-2 py-6 text-base shadow-[0_0_20px_rgba(6,182,212,0.2)]"
+              className="w-full flex items-center justify-center gap-2 py-4 text-base shadow-[0_0_20px_rgba(6,182,212,0.2)] rounded-full "
               disabled={!isValidUrl || status === 'validating'}
               onClick={startAnalysis}
             >
