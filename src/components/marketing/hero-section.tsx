@@ -12,10 +12,10 @@ export function HeroSection() {
     <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden">
       {/* Background glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-cyan/20 blur-[120px] rounded-full pointer-events-none opacity-50" />
-      
+
       <div className="container mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-8 items-center">
-          
+
           {/* Left Column: Text & CTAs */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -27,18 +27,18 @@ export function HeroSection() {
               <SparklesIcon className="w-3.5 h-3.5" />
               AI-POWERED DOCUMENTATION
             </div>
-            
+
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground mb-6 leading-tight">
               From repository to <br className="hidden md:block" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-cyan via-brand-blue to-brand-violet">
                 remarkable documentation.
               </span>
             </h1>
-            
+
             <p className="text-lg text-muted-foreground mb-8 max-w-xl">
               GitDoc AI understands your GitHub repository, generates polished documentation, and helps you publish it without leaving your workflow.
             </p>
-            
+
             <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto mb-8">
               <Link href="/analyze">
                 <GradientButton className="w-full sm:w-auto h-12 text-base px-8">
@@ -52,7 +52,7 @@ export function HeroSection() {
                 </SecondaryButton>
               </Link>
             </div>
-            
+
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-brand-teal" /> Free to use
@@ -65,7 +65,7 @@ export function HeroSection() {
               </div>
             </div>
           </motion.div>
-          
+
           {/* Right Column: Animated Visual */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -75,7 +75,7 @@ export function HeroSection() {
           >
             <div className="relative w-full max-w-md aspect-square">
               {/* Central AI Node */}
-              <motion.div 
+              <motion.div
                 animate={{ boxShadow: ["0 0 20px rgba(6,182,212,0.2)", "0 0 40px rgba(6,182,212,0.4)", "0 0 20px rgba(6,182,212,0.2)"] }}
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-2xl bg-card border border-brand-cyan/30 flex items-center justify-center z-20 backdrop-blur-xl shadow-2xl"
@@ -84,7 +84,7 @@ export function HeroSection() {
                   AI
                 </div>
               </motion.div>
-              
+
               {/* Orbiting Repository Card */}
               <motion.div
                 animate={{ y: [-10, 10, -10] }}
@@ -103,7 +103,7 @@ export function HeroSection() {
                   </div>
                 </GlassCard>
               </motion.div>
-              
+
               {/* Connecting Lines */}
               <svg className="absolute inset-0 w-full h-full z-10 pointer-events-none">
                 <motion.path
@@ -117,7 +117,7 @@ export function HeroSection() {
                   transition={{ duration: 1.5, delay: 0.5 }}
                 />
                 <motion.path
-                  d="M 320 200 Q 370 200 420 320"
+                  d="M 220 220 Q 340 200 440 340"
                   fill="none"
                   stroke="rgba(139,92,246,0.3)"
                   strokeWidth="2"
@@ -127,14 +127,14 @@ export function HeroSection() {
                   transition={{ duration: 1.5, delay: 0.8 }}
                 />
                 <motion.circle cx="200" cy="200" r="3" fill="#3b82f6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }} />
-                <motion.circle cx="320" cy="200" r="3" fill="#8b5cf6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }} />
+                <motion.circle cx="260" cy="210" r="3" fill="#8b5cf6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }} />
               </svg>
 
               {/* Orbiting Output Card */}
               <motion.div
                 animate={{ y: [10, -10, 10] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                className="absolute bottom-[10%] right-[0%] z-30"
+                className="absolute bottom-[0%] right-[-10%] z-30"
               >
                 <GlassCard className="p-4 flex flex-col gap-3 min-w-[200px] border-brand-violet/20">
                   <div className="flex items-center gap-2">
@@ -152,7 +152,7 @@ export function HeroSection() {
                   </div>
                 </GlassCard>
               </motion.div>
-              
+
             </div>
           </motion.div>
         </div>

@@ -8,28 +8,28 @@
 @theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  
+
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
-  
+
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
-  
+
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
-  
+
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
-  
+
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-  
+
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
-  
+
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
-  
+
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -49,86 +49,103 @@
 @utility container {
   margin-inline: auto;
   padding-inline: 2rem;
-  @media (width >= --theme(--breakpoint-sm)) {
+
+  @media (width >=--theme(--breakpoint-sm)) {
     max-width: none;
   }
-  @media (width >= 1400px) {
+
+  @media (width >=1400px) {
     max-width: 1400px;
   }
 }
 
 /*
-  The default theme is light mode.
+  The default theme is light mode (warm, editorial, premium).
 */
 :root {
-  --background: #f8fafc; /* slate-50 */
-  --foreground: #020617; /* slate-950 */
+  --background: #F4F6F8;
+  --foreground: #0F172A;
   
-  --card: #ffffff;
-  --card-foreground: #020617;
+  --card: #FFFFFF;
+  --card-foreground: #0F172A;
   
-  --popover: #ffffff;
-  --popover-foreground: #020617;
+  --popover: #FFFFFF;
+  --popover-foreground: #0F172A;
   
-  --primary: #0f172a; /* slate-900 */
-  --primary-foreground: #f8fafc;
+  --primary: #0891B2; /* Cool Cyan/Teal */
+  --primary-foreground: #FFFFFF;
   
-  --secondary: #f1f5f9; /* slate-100 */
-  --secondary-foreground: #0f172a;
+  --secondary: #E2E8F0;
+  --secondary-foreground: #0F172A;
   
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b; /* slate-500 */
+  --muted: #E2E8F0;
+  --muted-foreground: #64748B;
   
-  --accent: #f1f5f9;
-  --accent-foreground: #0f172a;
+  --accent: #E2E8F0;
+  --accent-foreground: #0F172A;
   
-  --destructive: #ef4444; /* red-500 */
-  --destructive-foreground: #f8fafc;
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
   
-  --border: #e2e8f0; /* slate-200 */
-  --input: #e2e8f0;
-  --ring: #020617;
+  --border: #CBD5E1;
+  --input: #CBD5E1;
+  --ring: #0891B2;
   
-  --radius: 0.75rem;
+  --brand-coral: #0891B2; /* Cool Cyan */
+  --brand-cyan: #0D9488; /* Teal */
+  --brand-blue: #2563EB; /* Royal Blue */
+  --brand-violet: #6D28D9; /* Indigo Violet */
+  --brand-teal: #0D9488;
+  --brand-amber: #D97706;
+  
+  --radius: 10px;
 }
 
 /*
-  Dark mode matches the GitDoc AI reference image.
+  Dark mode foundation (sleek, confidence, intelligent).
 */
 .dark {
-  --background: #020617; /* Deep navy/near-black */
-  --foreground: #f8fafc;
+  --background: #0B0F19;
+  --foreground: #F8FAFC;
 
-  --card: #0f172a; /* Dark layered surface */
-  --card-foreground: #f8fafc;
+  --card: #111827;
+  --card-foreground: #F8FAFC;
 
-  --popover: #0f172a;
-  --popover-foreground: #f8fafc;
+  --popover: #111827;
+  --popover-foreground: #F8FAFC;
 
-  --primary: #3b82f6; /* Electric blue */
-  --primary-foreground: #ffffff;
+  --primary: #00E5FF; /* Electric Cyan */
+  --primary-foreground: #0B0F19;
 
-  --secondary: #1e293b; /* slate-800 */
-  --secondary-foreground: #f8fafc;
+  --secondary: #1F2937;
+  --secondary-foreground: #F8FAFC;
 
-  --muted: #1e293b;
-  --muted-foreground: #94a3b8; /* slate-400 */
+  --muted: #1F2937;
+  --muted-foreground: #9CA3AF;
 
-  --accent: #1e293b;
-  --accent-foreground: #f8fafc;
+  --accent: #1F2937;
+  --accent-foreground: #F8FAFC;
 
-  --destructive: #ef4444; /* red-500 — visible on dark backgrounds */
-  --destructive-foreground: #ffffff;
+  --destructive: #F87171;
+  --destructive-foreground: #FFFFFF;
 
-  --border: #1e293b;
-  --input: #1e293b;
-  --ring: #3b82f6;
+  --border: #374151;
+  --input: #374151;
+  --ring: #00E5FF;
+
+  --brand-coral: #00E5FF; /* Electric Cyan */
+  --brand-cyan: #00E5FF;
+  --brand-blue: #3B82F6; /* Royal Blue */
+  --brand-violet: #8B5CF6; /* Indigo Violet */
+  --brand-teal: #10B981; /* Mint Teal */
+  --brand-amber: #FBBF24;
 }
 
 @layer base {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
@@ -163,6 +180,7 @@
 @utility scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+
   &::-webkit-scrollbar {
     display: none;
   }
@@ -199,13 +217,25 @@
 /* ─── Animations ─────────────────────────────────────────────────────── */
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: translate(-50%, -48%) scale(0.96); }
-  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
 }
 
 .animate-fade-in {
@@ -235,25 +265,21 @@
   bottom: 0;
   left: 0;
   transform: translateX(-100%);
-  background-image: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.08) 20%,
-    rgba(255, 255, 255, 0.15) 60%,
-    rgba(255, 255, 255, 0) 100%
-  );
+  background-image: linear-gradient(90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.08) 20%,
+      rgba(255, 255, 255, 0.15) 60%,
+      rgba(255, 255, 255, 0) 100%);
   animation: shimmer 2s infinite;
   content: '';
 }
 
 .dark .animate-shimmer::after {
-  background-image: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.04) 20%,
-    rgba(255, 255, 255, 0.08) 60%,
-    rgba(255, 255, 255, 0) 100%
-  );
+  background-image: linear-gradient(90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.04) 20%,
+      rgba(255, 255, 255, 0.08) 60%,
+      rgba(255, 255, 255, 0) 100%);
 }
 
 /* ─── Focus Utilities ────────────────────────────────────────────────── */
@@ -261,4 +287,3 @@
 .focus-ring {
   @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-background;
 }
-

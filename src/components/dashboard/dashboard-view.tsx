@@ -187,7 +187,7 @@ export function DashboardView() {
           setUser(json.data.user);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   // ─── Loading State ───────────────────────────────────────────────

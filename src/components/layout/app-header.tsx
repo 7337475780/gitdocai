@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useTheme } from "next-themes";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Search, Sun, Moon, Menu, Loader2, AlertCircle, FileText, FolderGit } from "lucide-react";
 import { IconButton } from "@/components/ui/button";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -23,10 +23,11 @@ export function AppHeader({
   onMenuClick?: () => void;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
   const [user, setUser] = React.useState<{ name: string; avatarUrl?: string } | null>(null);
-  
+
   // Search state
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState("");
@@ -67,7 +68,7 @@ export function AppHeader({
           setUser(json.data.user);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   // Reset search when modal closes
@@ -149,6 +150,12 @@ export function AppHeader({
     }
   };
 
+  const getBreadcrumbs = () => {
+    const segments = pathname.split("/").filter(Boolean);
+    if (segments.length === 0) return "Overview";
+    return segments.map(seg => seg.charAt(0).toUpperCase() + seg.slice(1)).join(" / ");
+  };
+
   return (
     <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-border bg-background/80 px-4 backdrop-blur-md sm:px-6">
       <div className="flex items-center gap-4">
@@ -161,9 +168,13 @@ export function AppHeader({
           />
         )}
         
+        <span className="hidden lg:inline text-[11px] font-semibold text-muted-foreground/80 tracking-wide uppercase">
+          {getBreadcrumbs()}
+        </span>
+        
         {/* Mobile Search Button */}
         <IconButton
-          icon={<Search className="h-5 w-5" />}
+          icon={<Search className="h-4 w-4" />}
           onClick={() => setOpen(true)}
           className="sm:hidden text-muted-foreground hover:text-foreground"
           aria-label="Open search dialog"
@@ -174,10 +185,10 @@ export function AppHeader({
           onClick={() => setOpen(true)}
           className="relative hidden sm:block cursor-pointer group"
         >
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-hover:text-foreground transition-colors" />
-          <div className="flex h-9 w-64 md:w-80 items-center justify-between rounded-md border border-input bg-card/50 pl-9 pr-3 text-sm text-muted-foreground shadow-sm group-hover:border-brand-cyan transition-colors">
-            <span>Search repositories, docs...</span>
-            <kbd className="inline-flex h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground pointer-events-none">
+          <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/80 group-hover:text-foreground transition-colors" />
+          <div className="flex h-8 w-44 md:w-52 lg:w-64 items-center justify-between rounded-md border border-border bg-secondary/40 pl-8 pr-2.5 text-xs text-muted-foreground group-hover:border-brand-coral/40 transition-colors">
+            <span className="truncate mr-1.5 whitespace-nowrap">Search...</span>
+            <kbd className="inline-flex h-4 items-center gap-0.5 rounded border bg-muted px-1 font-mono text-[9px] font-medium text-muted-foreground pointer-events-none shrink-0">
               {isMac ? "⌘K" : "Ctrl+K"}
             </kbd>
           </div>
@@ -186,58 +197,42 @@ export function AppHeader({
 
       <Dialog.Root open={open} onOpenChange={setOpen}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-fade-in" />
-          <Dialog.Content 
-            className="fixed left-[50%] top-[50%] z-50 w-full max-w-lg border border-border bg-card shadow-2xl rounded-2xl outline-none animate-scale-in p-0 overflow-hidden" 
-            style={{ transform: "translate(-50%, -50%)" }}
-            onKeyDown={handleDialogKeyDown}
-          >
-            <div className="flex items-center border-b border-border px-4 py-3">
-              <Search className="h-5 w-5 text-muted-foreground mr-3" />
+          <Dialog.Overlay className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm" />
+          <Dialog.Content className="fixed left-[50%] top-[50%] z-50 w-full max-w-lg translate-x-[-50%] translate-y-[-50%] rounded-xl border border-border bg-card shadow-2xl duration-200">
+            <div className="flex items-center border-b border-border px-3">
+              <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
               <input
-                type="text"
-                placeholder="Search repositories, docs..."
-                className="w-full bg-transparent border-0 p-0 text-sm text-foreground placeholder:text-muted-foreground focus:ring-0 focus:outline-none"
+                className="flex h-12 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder="Type to search..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={handleDialogKeyDown}
                 autoFocus
               />
-              <button 
-                onClick={() => setOpen(false)}
-                className="text-xs text-muted-foreground hover:text-foreground border border-border px-1.5 py-0.5 rounded bg-secondary/50"
-              >
-                ESC
-              </button>
             </div>
 
-            <div className="max-h-96 overflow-y-auto p-2 custom-scrollbar">
+            <div className="max-h-[300px] overflow-y-auto p-2">
               {loading && (
-                <div className="flex items-center justify-center py-6 text-sm text-muted-foreground gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin text-brand-cyan" />
-                  <span>Searching...</span>
+                <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin text-brand-cyan" />
+                  Searching...
                 </div>
               )}
 
               {error && (
-                <div className="flex items-center justify-center py-6 text-sm text-destructive gap-2">
+                <div className="flex items-center justify-center gap-2 py-6 text-sm text-destructive">
                   <AlertCircle className="h-4 w-4" />
-                  <span>{error}</span>
+                  {error}
                 </div>
               )}
 
-              {!loading && !error && query.trim().length >= 2 && flatItems.length === 0 && (
-                <div className="text-center py-6 text-sm text-muted-foreground">
+              {!loading && !error && query.trim().length >= 2 && results.repositories.length === 0 && results.documents.length === 0 && (
+                <div className="py-6 text-center text-sm text-muted-foreground">
                   No results found for &ldquo;{query}&rdquo;
                 </div>
               )}
 
-              {!loading && !error && query.trim().length < 2 && (
-                <div className="text-center py-6 text-xs text-muted-foreground">
-                  Type at least 2 characters to search...
-                </div>
-              )}
-
-              {!loading && !error && flatItems.length > 0 && (
+              {!loading && (results.repositories.length > 0 || results.documents.length > 0) && (
                 <div className="space-y-4">
                   {results.repositories.length > 0 && (
                     <div>

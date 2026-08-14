@@ -8,20 +8,30 @@ export interface GlassCardProps extends Omit<HTMLMotionProps<"div">, "children">
   children?: React.ReactNode;
   className?: string;
   glow?: boolean;
+  variant?: "flat" | "elevated" | "featured" | "glass";
 }
 
-export function GlassCard({ children, className, glow = false, ...props }: GlassCardProps) {
+export function GlassCard({ children, className, glow = false, variant = "glass", ...props }: GlassCardProps) {
+  const variantClasses = {
+    glass: "rounded-xl border border-white/10 dark:border-white/5 bg-card/50 backdrop-blur-xl shadow-lg",
+    flat: "bg-secondary/30 border border-border/40 rounded-md shadow-none",
+    elevated: "bg-card border border-border rounded-lg shadow-sm hover:shadow-md",
+    featured: "bg-card border border-brand-coral/30 rounded-lg shadow-md before:absolute before:inset-x-0 before:top-0 before:h-0.5 before:bg-gradient-to-r before:from-brand-coral before:to-brand-violet",
+  };
+
   return (
     <motion.div
-      whileHover={glow ? { y: -2, boxShadow: "0 10px 40px -10px rgba(6,182,212,0.15)" } : { y: -2 }}
+      whileHover={glow ? { y: -1, transition: { duration: 0.2 } } : undefined}
       className={cn(
-        "relative overflow-hidden rounded-xl border border-white/5 bg-card/50 p-6 backdrop-blur-xl shadow-lg",
-        "transition-all duration-300",
+        "relative overflow-hidden p-6 transition-all duration-300",
+        variantClasses[variant],
         className
       )}
       {...props}
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
+      {variant === "glass" && (
+        <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
+      )}
       <div className="relative z-10">{children}</div>
     </motion.div>
   );

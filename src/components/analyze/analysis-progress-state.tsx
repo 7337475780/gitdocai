@@ -34,7 +34,7 @@ export function AnalysisProgressState() {
 
   return (
     <div className="flex-1 w-full max-w-5xl mx-auto px-6 py-12 md:py-24 h-full flex flex-col justify-center min-h-[calc(100vh-140px)]">
-      
+
       <div className="text-center mb-12">
         <h2 className="text-3xl font-bold tracking-tight text-foreground mb-4">
           Analyzing repository…
@@ -45,7 +45,7 @@ export function AnalysisProgressState() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-        
+
         {/* Left Column: Progress List */}
         <GlassCard className="p-8 border-brand-cyan/20 bg-card/60 backdrop-blur-xl shadow-2xl relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-brand-violet/5 pointer-events-none" />
@@ -56,7 +56,7 @@ export function AnalysisProgressState() {
               const isPending = index > currentStep;
 
               return (
-                <motion.div 
+                <motion.div
                   key={step}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -69,8 +69,8 @@ export function AnalysisProgressState() {
                   <div className={cn(
                     "w-6 h-6 rounded-full flex items-center justify-center shrink-0",
                     isActive ? "bg-brand-cyan/20 text-brand-cyan shadow-[0_0_10px_rgba(6,182,212,0.5)]" :
-                    isCompleted ? "bg-brand-teal/20 text-brand-teal" :
-                    "bg-secondary text-muted-foreground"
+                      isCompleted ? "bg-brand-teal/20 text-brand-teal" :
+                        "bg-secondary text-muted-foreground"
                   )}>
                     {isCompleted ? (
                       <CheckCircle2 className="w-4 h-4" />
@@ -83,8 +83,8 @@ export function AnalysisProgressState() {
                   <span className={cn(
                     "font-medium text-sm md:text-base",
                     isActive ? "text-foreground" :
-                    isCompleted ? "text-muted-foreground" :
-                    "text-muted-foreground"
+                      isCompleted ? "text-muted-foreground" :
+                        "text-muted-foreground"
                   )}>
                     {step}
                   </span>
@@ -97,11 +97,11 @@ export function AnalysisProgressState() {
         {/* Right Column: Dynamic Visual */}
         <div className="hidden md:flex flex-col items-center justify-center h-full relative">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-brand-violet/10 blur-[60px] rounded-full pointer-events-none" />
-          
+
           <div className="relative w-full max-w-sm aspect-square flex items-center justify-center">
-            
+
             <motion.div
-              animate={{ 
+              animate={{
                 scale: [1, 1.05, 1],
                 boxShadow: ["0 0 20px rgba(139,92,246,0.2)", "0 0 40px rgba(139,92,246,0.4)", "0 0 20px rgba(139,92,246,0.2)"]
               }}
@@ -124,7 +124,7 @@ export function AnalysisProgressState() {
                 <FolderGit2 className="w-5 h-5" />
               </div>
             </motion.div>
-            
+
           </div>
         </div>
       </div>

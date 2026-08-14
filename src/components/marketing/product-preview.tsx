@@ -28,7 +28,7 @@ export function ProductPreview() {
         >
           {/* Subtle border glow */}
           <div className="absolute inset-0 bg-gradient-to-tr from-brand-cyan/20 via-transparent to-brand-violet/20 opacity-20 pointer-events-none" />
-          
+
           {/* Mac window controls */}
           <div className="h-10 border-b border-border bg-card/80 flex items-center px-4 gap-2">
             <div className="w-3 h-3 rounded-full bg-red-500/80" />
@@ -79,27 +79,35 @@ export function ProductPreview() {
 
               {/* Editor Split View */}
               <div className="flex-1 flex overflow-hidden">
-                <div className="w-1/2 border-r border-border p-6 overflow-y-hidden text-sm font-mono text-muted-foreground/80 relative">
+                <div className="w-1/2 border-r border-border p-6 overflow-y-hidden text-xs font-mono text-muted-foreground/80 relative">
                   <div className="absolute top-2 right-4 text-[10px] font-sans px-2 py-1 bg-card rounded text-muted-foreground">Editor</div>
                   <div className="text-brand-cyan"># Next.js - The React Framework</div>
-                  <br/>
-                  <div className="flex gap-2 mb-4">
-                    <span className="text-brand-amber">![Version]</span><span className="text-foreground">(https://img.shields.io/badge/Next.js-v14.2-blue)</span>
-                    <span className="text-brand-amber">![License]</span><span className="text-foreground">(https://img.shields.io/badge/License-MIT-green)</span>
+                  <br />
+                  <div className="space-y-1 mb-4">
+                    <div className="truncate max-w-full">
+                      <span className="text-brand-amber">![Version]</span><span className="text-foreground">(https://img.shields.io/badge/Next.js-v14.2-blue)</span>
+                    </div>
+                    <div className="truncate max-w-full">
+                      <span className="text-brand-amber">![License]</span><span className="text-foreground">(https://img.shields.io/badge/License-MIT-green)</span>
+                    </div>
                   </div>
-                  <div>Next.js is a React framework for building full-stack web applications.</div>
-                  <div>It supports Server Components, Static and Dynamic Rendering, API</div>
-                  <div>Routes, and more. Built for performance and developer experience.</div>
-                  <br/>
+                  <div className="leading-relaxed">
+                    <div>Next.js is a React framework for building full-stack web applications.</div>
+                    <div>It supports Server Components, Static and Dynamic Rendering, API</div>
+                    <div>Routes, and more. Built for performance and developer experience.</div>
+                  </div>
+                  <br />
                   <div className="text-brand-blue">## ✨ Features</div>
-                  <br/>
-                  <div>- Server Components</div>
-                  <div>- Static & Dynamic Rendering</div>
-                  <div>- Built-in API Routes</div>
-                  <div>- Image Optimization</div>
-                  <div>- Zero-configuration</div>
+                  <br />
+                  <div className="space-y-1">
+                    <div>- Server Components</div>
+                    <div>- Static & Dynamic Rendering</div>
+                    <div>- Built-in API Routes</div>
+                    <div>- Image Optimization</div>
+                    <div>- Zero-configuration</div>
+                  </div>
                 </div>
-                
+
                 <div className="w-1/2 bg-card/20 p-8 overflow-y-hidden relative">
                   <div className="absolute top-2 right-4 text-[10px] font-sans px-2 py-1 bg-card rounded text-muted-foreground border border-border">Preview</div>
                   <h1 className="text-3xl font-bold mb-4 border-b border-border pb-2 text-foreground">Next.js - The React Framework</h1>
@@ -123,11 +131,11 @@ export function ProductPreview() {
                 </div>
               </div>
             </div>
-            
+
             {/* Right Panel: Analysis & Quality */}
             <div className="hidden lg:flex w-72 flex-col bg-card/40 border-l border-border p-4 gap-4">
               <h3 className="text-sm font-semibold text-foreground mb-2">Repository Analysis</h3>
-              
+
               <MetricCard
                 title="Files Analyzed"
                 value="248"
@@ -135,7 +143,7 @@ export function ProductPreview() {
                 iconColorClass="bg-brand-blue/10 border-brand-blue/20"
                 className="p-4"
               />
-              
+
               <div className="mt-4">
                 <h3 className="text-sm font-semibold text-foreground mb-3">Documentation Quality</h3>
                 <GlassCard className="p-4 flex flex-col items-center justify-center border-brand-cyan/20">
