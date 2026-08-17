@@ -62,7 +62,7 @@ export class CerebrasProvider implements AIProvider {
             { role: 'user', content: userPrompt }
           ],
           temperature: 0.2,
-          max_tokens: 4000,
+          max_tokens: 8000,
         }),
         signal: controller.signal
       });

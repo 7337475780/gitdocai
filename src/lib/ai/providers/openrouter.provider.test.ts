@@ -1,6 +1,30 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { OpenRouterProvider } from './openrouter.provider';
 
+const makeContext = () => ({
+  repository: { name: 'test', owner: 'owner', description: '', url: '', mainBranch: 'main', primaryLanguage: 'TypeScript' },
+  projectType: 'Web',
+  packageManager: 'npm',
+  technologies: [],
+  dependencies: [],
+  devDependencies: [],
+  scripts: [],
+  environmentVars: [],
+  apiEndpoints: [],
+  features: [],
+  pageRoutes: [],
+  stateManagement: [],
+  databaseInfo: null,
+  authInfo: null,
+  configFiles: [],
+  testingFrameworks: [],
+  hasDocker: false,
+  hasCi: false,
+  repositoryStructure: '',
+  tree: [],
+  signals: [],
+} as any);
+
 describe('OpenRouterProvider', () => {
   const originalEnv = process.env;
 
@@ -18,7 +42,7 @@ describe('OpenRouterProvider', () => {
     delete process.env.OPENROUTER_API_KEY;
     const provider = new OpenRouterProvider();
     await expect(provider.generateReadme(
-      { repository: { name: 'test' }, technologies: [], scripts: [], signals: [], environmentVars: [], tree: [], projectType: 'Web', packageManager: 'npm' } as any,
+      makeContext(),
       { template: 'professional', tone: 'professional' },
       'test-model',
       1000
@@ -38,7 +62,7 @@ describe('OpenRouterProvider', () => {
     });
 
     const result = await provider.generateReadme(
-      { repository: { name: 'test' }, technologies: [], scripts: [], signals: [], environmentVars: [], tree: [], projectType: 'Web', packageManager: 'npm' } as any,
+      makeContext(),
       { template: 'professional', tone: 'professional' },
       'test-model',
       1000
@@ -58,7 +82,7 @@ describe('OpenRouterProvider', () => {
     });
 
     await expect(provider.generateReadme(
-      { repository: { name: 'test' }, technologies: [], scripts: [], signals: [], environmentVars: [], tree: [], projectType: 'Web', packageManager: 'npm' } as any,
+      makeContext(),
       { template: 'professional', tone: 'professional' },
       'test-model',
       1000
@@ -77,7 +101,7 @@ describe('OpenRouterProvider', () => {
     });
 
     await expect(provider.generateReadme(
-      { repository: { name: 'test' }, technologies: [], scripts: [], signals: [], environmentVars: [], tree: [], projectType: 'Web', packageManager: 'npm' } as any,
+      makeContext(),
       { template: 'professional', tone: 'professional' },
       'test-model',
       1000

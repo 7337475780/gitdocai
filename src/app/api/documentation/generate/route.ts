@@ -5,9 +5,11 @@ import { repositoryAnalysisService } from '@/lib/repository-analysis/repository-
 import { AIOrchestrator } from '@/lib/ai/ai-orchestrator';
 import { ContextBuilder } from '@/lib/documentation/context-builder';
 import { MarkdownValidator } from '@/lib/documentation/markdown-validator';
+import { SectionDeduplicator } from '@/lib/documentation/section-deduplicator';
 import { SectionParser } from '@/lib/documentation/section-parser';
 import { QualityEngine } from '@/lib/documentation-quality/quality-engine';
 import { VersionService } from '@/lib/documentation-versions/version-service';
+import { PathSanitizer } from '@/lib/documentation/path-sanitizer';
 
 const GenerateRequestSchema = z.object({
   analysisId: z.string(),
@@ -73,21 +75,38 @@ export async function POST(req: Request) {
     });
     const rawMarkdown = orchestrationResult.result.markdown;
 
-    // Validate and clean markdown
-    let cleanedMarkdown: string;
+    // ── Step 1: Validate & clean markdown ────────────────────────────────────
+    // Strips outer code fences, ensures single H1, fixes unclosed code blocks,
+    // removes AI-disclaimer boilerplate.
+    let validatedMarkdown: string;
     try {
-      cleanedMarkdown = MarkdownValidator.validate(rawMarkdown);
+      validatedMarkdown = MarkdownValidator.validate(rawMarkdown);
     } catch {
       throw new Error('DOCUMENT_VALIDATION_FAILED');
     }
 
-    // Parse sections and pre-score
+    // ── Step 2: Deduplicate & reorder sections ────────────────────────────────
+    // Merges duplicate ## headings, removes empty sections, enforces canonical
+    // README section order. Produces a coherent single-document README.
+    const deduplicatedMarkdown = SectionDeduplicator.deduplicate(validatedMarkdown);
+
+    // ── Step 2.5: Sanitize local paths ───────────────────────────────────────
+    // Final safety net: removes any Windows/Unix local filesystem paths or
+    // personal usernames that leaked from source code excerpts or were
+    // hallucinated by the LLM. Applied after deduplication so path patterns
+    // in any section are caught.
+    const cleanedMarkdown = PathSanitizer.sanitizeMarkdown(deduplicatedMarkdown);
+
+    // ── Step 3: Parse into sections for Studio ────────────────────────────────
     const sections = SectionParser.parse(cleanedMarkdown);
+
+    // ── Step 4: Score documentation quality ──────────────────────────────────
     const quality = QualityEngine.evaluate(cleanedMarkdown, analysis);
 
     const metadata = {
       wordCount: cleanedMarkdown.split(/\s+/).filter(Boolean).length,
       characterCount: cleanedMarkdown.length,
+      sectionCount: sections.length,
       ...orchestrationResult.metadata
     };
 

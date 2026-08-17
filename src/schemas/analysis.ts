@@ -26,6 +26,11 @@ export const DocumentationReadinessSchema = z.object({
   recommended: z.array(z.string()),
 });
 
+export const SourceFileSchema = z.object({
+  path: z.string(),
+  content: z.string(),
+});
+
 export const RepositoryAnalysisResultSchema = z.object({
   analysisId: z.string(),
   repositoryName: z.string(),
@@ -47,6 +52,8 @@ export const RepositoryAnalysisResultSchema = z.object({
   metadata: RepositoryMetadataSchema,
   languages: z.array(RepositoryLanguageSchema),
   tree: RepositoryTreeSchema,
+  /** Actual source file excerpts read during analysis for deep documentation grounding */
+  sourceFiles: z.array(SourceFileSchema).optional(),
 });
 
 export const AnalysisErrorSchema = z.object({
@@ -69,6 +76,7 @@ export type DetectedTechnology = z.infer<typeof DetectedTechnologySchema>;
 export type ProjectSignal = z.infer<typeof ProjectSignalSchema>;
 export type RepositoryScript = z.infer<typeof RepositoryScriptSchema>;
 export type DocumentationReadiness = z.infer<typeof DocumentationReadinessSchema>;
+export type SourceFile = z.infer<typeof SourceFileSchema>;
 export type RepositoryAnalysisResult = z.infer<typeof RepositoryAnalysisResultSchema>;
 export type AnalysisError = z.infer<typeof AnalysisErrorSchema>;
 export type AnalysisResponse = z.infer<typeof AnalysisResponseSchema>;

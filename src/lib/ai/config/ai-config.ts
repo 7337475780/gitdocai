@@ -31,7 +31,7 @@ export function getAIConfig(): AIConfig {
     console.warn('AI_PROVIDER_ORDER is missing or empty. Documentation generation will fail unless a provider is specified.');
   }
 
-  const requestTimeoutMs = parseInt(process.env.AI_REQUEST_TIMEOUT_MS || '45000', 10);
+  const requestTimeoutMs = parseInt(process.env.AI_REQUEST_TIMEOUT_MS || '90000', 10);
   const maxTotalAttempts = parseInt(process.env.AI_MAX_TOTAL_ATTEMPTS || '10', 10);
 
   return {

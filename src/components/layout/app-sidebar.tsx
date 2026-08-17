@@ -71,7 +71,7 @@ export function AppSidebar({ className }: { className?: string }) {
       )}
     >
       {/* Logo */}
-      <div className="flex h-14 shrink-0 items-center px-5 border-b border-border/40">
+      <div className="flex h-16 shrink-0 items-center px-5 border-b border-border/40">
         <div className="flex items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element -- Local branding logo asset */}
           <img

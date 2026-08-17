@@ -65,7 +65,7 @@ describe('ai-config', () => {
 
       const config = getAIConfig();
       expect(config.providerOrder).toEqual(['gemini']);
-      expect(config.requestTimeoutMs).toBe(45000);
+      expect(config.requestTimeoutMs).toBe(90000);
       expect(config.maxTotalAttempts).toBe(10);
     });
 

@@ -6,6 +6,20 @@ export type AIProviderId =
   | "groq"
   | "cerebras"
   | "huggingface";
+export interface ApiEndpoint {
+  method: string;
+  path: string;
+  purpose: string;
+  authentication: boolean;
+}
+
+export interface DetectedFeature {
+  name: string;
+  description: string;
+  routes?: string[];
+  components?: string[];
+}
+
 export interface DocumentationContext {
   repository: {
     name: string;
@@ -14,16 +28,42 @@ export interface DocumentationContext {
     url: string;
     mainBranch: string;
     primaryLanguage: string;
+    stars?: number;
+    forks?: number;
   };
   projectType: string;
   technologies: Array<{ name: string; category: string }>;
   packageManager: string;
   dependencies: string[];
+  devDependencies: string[];
   scripts: Array<{ name: string; command: string }>;
   environmentVars: string[];
+  // Deep intelligence fields
+  apiEndpoints: ApiEndpoint[];
+  features: DetectedFeature[];
+  pageRoutes: string[];
+  stateManagement: string[];
+  databaseInfo: {
+    type: string;
+    orm: string;
+    hasSchema: boolean;
+    models: string[];
+  } | null;
+  authInfo: {
+    provider: string;
+    strategies: string[];
+    hasProtectedRoutes: boolean;
+  } | null;
+  configFiles: string[];
+  testingFrameworks: string[];
+  hasDocker: boolean;
+  hasCi: boolean;
+  repositoryStructure: string;
   tree: string[];
   signals: Array<{ type: string; value: string }>;
   existingReadmeExcerpt?: string;
+  /** Actual source file excerpts for deep, source-grounded documentation */
+  sourceFiles?: Array<{ path: string; content: string }>;
 }
 
 export interface GenerateReadmeOptions {
